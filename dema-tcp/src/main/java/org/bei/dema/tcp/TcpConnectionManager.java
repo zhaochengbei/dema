@@ -1,5 +1,6 @@
 package org.bei.dema.tcp;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.nio.channels.CancelledKeyException;
 import java.util.ArrayList;
@@ -24,11 +25,16 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
+
+	public int checkReadThreadCount = 1;
+	public int exeIoTaskThreadCount = Runtime.getRuntime().availableProcessors()*5;
+	/**
+	 * 
+	 */
 	public Vector<TcpConnection> connections = new Vector<TcpConnection>();
 	/**
-	 * only for checkReadable thread,use different thread will 
+	 * only for checkReadable thread,use different thread ,thread will parallel
 	 */
-//	private Vector<TcpConnection> connectionsForRead = new Vector<TcpConnection>();
 	public Vector<Vector<TcpConnection>> connectionGroups = new Vector<Vector<TcpConnection>>();
 	/**
 	 * 
@@ -46,19 +52,19 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	private ScheduledExecutorService checkSocketReadbleThreads = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
+	private ScheduledExecutorService checkSocketReadbleThreads;
+	private ThreadFactory checkSocketReadableThreadFactory = new ThreadFactory() {
 		private int index = 0;
 		public Thread newThread(Runnable r) {
 			return new Thread(r,"CheckSocketReadble_"+(index++));
 		}
-	});
+	};
 	
 	
 	/**
 	 * 
 	 */
-	private ScheduledExecutorService distributionTaskThreads = Executors.newScheduledThreadPool(1,new ThreadFactory() {
-		
+	private ScheduledExecutorService distributionTaskThreads= Executors.newScheduledThreadPool(1,new ThreadFactory() {
 		public Thread newThread(Runnable r) {
 			return new Thread(r, "DistributionTask_0");
 		}
@@ -66,12 +72,13 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	private ExecutorService exeTaskThreads = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*5,new ThreadFactory() {
+	private ExecutorService exeTaskThreads;
+	private ThreadFactory exeTaskThreadFactory = new ThreadFactory() {
 		public int threadIndex = 0;
 		public Thread newThread(Runnable r) {
 			return new Thread(r, "ExeIoTask_" + threadIndex++);
 		}
-	});
+	};
 	/**
 	 * 
 	 */
@@ -83,7 +90,6 @@ public class TcpConnectionManager {
 					TcpConnection connection = connections.get(i);
 					//check connection is  not close
 					if(connection.isClose() == true){
-//						connections.remove(i);
 						remove(connection);
 						i--;
 						TcpConncetionManagerTask tcpTask = new TcpConncetionManagerTask(TcpConnectionManagerTaskType.CLOSE, connection, ioHandler);
@@ -105,7 +111,7 @@ public class TcpConnectionManager {
 		/**
 		 * 
 		 */
-		private Vector<TcpConnection> connectionGroup = new Vector<TcpConnection>();
+		private Vector<TcpConnection> connectionGroup;
 		/**
 		 * 
 		 */
@@ -115,8 +121,8 @@ public class TcpConnectionManager {
 					TcpConnection connection = connectionGroup.get(i);
 					//check connection is not can be read
 					/**
-					 * 线程安全说明：
-					 * 线程修改了堆之后，另外一个线程并不会立即知道，中间有个时间差，通过标志位控制访问的两个线程是不会同时操作connection的；
+					 * thread safe explain:
+					 * after a thread nodify,another thread don't know in immediately,there has a time gap between happy and to know; 
 					 */
 					if(connection.inReading == false&&connection.available()>0){
 						connection.inReading = true;
@@ -126,37 +132,10 @@ public class TcpConnectionManager {
 				}
 			}catch (Exception e) {
 				//do nothing
-//				e.printStackTrace();
 			}
 		}
 	};
-	private Vector<CheckSocketReadbleLogic> checkSocketReadbleLogics = new Vector<CheckSocketReadbleLogic>(); 
-//	/**
-//	 * max heard gap
-//	 */
-//	public int maxReadIdleTime = 0;
-//	/**
-//	 * 
-//	 */
-//	private TimerTask checkReadIdleTimeOutLogic = new TimerTask() {
-//		
-//		public void run() {
-//			try {
-//				long time = System.currentTimeMillis();
-//				for (int i = 0; i < connections.size(); i++) {
-//					TcpConnection connection = connections.get(i);
-//					if(maxReadIdleTime !=0 &&connection.isClose() == false&&time - connection.lastReadTime> maxReadIdleTime){
-//						//use part will receive a close event;
-//						connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
-//					}
-//				}
-//			}catch (Exception e) {
-//				//can not reach here
-//				e.printStackTrace();
-//			}
-//			
-//		}
-//	};
+	private Vector<CheckSocketReadbleLogic> checkSocketReadbleLogics = new Vector<CheckSocketReadbleLogic>();
 	/**
 	 * 
 	 */
@@ -190,19 +169,23 @@ public class TcpConnectionManager {
 	 * @param ioHandler
 	 * @throws Exception
 	 */
-	protected void start(IoHandler ioHandler) throws Exception{
+	protected void start(IoHandler ioHandler) {
 		this.ioHandler = ioHandler;
 		// init container
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+		for (int i = 0; i < checkReadThreadCount; i++) {
 			Vector<TcpConnection> connectionGroup = new Vector<TcpConnection>();
 			connectionGroups.add(connectionGroup);
 			CheckSocketReadbleLogic checkSocketReadbleLogic = new CheckSocketReadbleLogic();
 			checkSocketReadbleLogic.connectionGroup = connectionGroup;
 			checkSocketReadbleLogics.add(checkSocketReadbleLogic);
 		}
+		//init thread
+		checkSocketReadbleThreads = Executors.newScheduledThreadPool(checkReadThreadCount, checkSocketReadableThreadFactory);
+		exeTaskThreads = Executors.newFixedThreadPool(exeIoTaskThreadCount, exeTaskThreadFactory);
+		
 		//start thread
 		checkSocketCloseThreads.scheduleAtFixedRate(checkSocketCloseLogic,1, 1, TimeUnit.MILLISECONDS);
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+		for (int i = 0; i < checkReadThreadCount; i++) {
 			checkSocketReadbleThreads.scheduleAtFixedRate(checkSocketReadbleLogics.get(i),1, 1, TimeUnit.MILLISECONDS);
 		}
 		distributionTaskThreads.scheduleAtFixedRate(distributionTaskLogic, 1, 1, TimeUnit.MILLISECONDS);
@@ -213,11 +196,7 @@ public class TcpConnectionManager {
 	 * 
 	 * @throws Exception
 	 */
-	public void shutdown() throws Exception{
-//		for (Iterator<TcpConnection> iterator = connections.iterator(); iterator.hasNext();){ 
-//			TcpConnection socket = iterator.next();
-//			socket.close(TcpConnectionCloseReason.ShutDownTcpServer);
-//		}
+	public void shutdown(){
 		//stop all thread
 		checkSocketCloseThreads.shutdown();
 		checkSocketReadbleThreads.shutdown();

@@ -59,7 +59,7 @@ public class TcpConnection {
 	 * @param port
 	 * @throws Exception
 	 */
-	public void connect(String host,int port) throws Exception{
+	public void connect(String host,int port) throws IOException{
 		socket.connect(new InetSocketAddress(host, port));
 	}
 	/**
@@ -76,7 +76,7 @@ public class TcpConnection {
 	 * @param byteBuffer
 	 * @throws Exception
 	 */
-	public void writeAndFlush(ByteBuffer byteBuffer) throws Exception{
+	public void writeAndFlush(ByteBuffer byteBuffer) throws IOException{
 		byteBuffer.flip();
 		byte[] bytes = new byte[byteBuffer.remaining()];
 		byteBuffer.get(bytes);
@@ -86,7 +86,6 @@ public class TcpConnection {
 		} catch (IOException e) {
 			//after a few millsecond use part use receive a close event;
 			close(TcpConnectionCloseReason.WriteError);
-//			throw e;
 		}
 	}
 	/**
@@ -94,7 +93,7 @@ public class TcpConnection {
 	 * @return
 	 * @throws Exception
 	 */
-	public int available() throws Exception{
+	public int available() throws IOException{
 		int available = 0;
 		try {
 			available = socket.getInputStream().available();
@@ -108,7 +107,7 @@ public class TcpConnection {
 	 * @param byteBuffer
 	 * @throws Exception
 	 */
-	public void read(ByteBuffer byteBuffer) throws Exception{
+	public void read(ByteBuffer byteBuffer) throws IOException{
 		try {
 			int length = available();
 			if(length > byteBuffer.remaining()){
@@ -121,7 +120,6 @@ public class TcpConnection {
 		} catch (IOException e) {
 			//after a few millsecond use part use receive a close event;
 			close(TcpConnectionCloseReason.WriteError);
-//			throw e;
 		}
 		
 	}
@@ -129,7 +127,7 @@ public class TcpConnection {
 	 * 
 	 * @throws Exception
 	 */
-	public void close(String reason) throws Exception{
+	public void close(String reason) throws IOException{
 		if(socket.isClosed() == true){
 			return;
 		}

@@ -1,10 +1,7 @@
 package org.bei.dema.tcp;
 
-import java.net.InetSocketAddress;
+import java.io.IOException;
 import java.net.Socket;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -35,7 +32,7 @@ public class TcpClients{
 	 * @param ioHandler
 	 * @throws Exception
 	 */
-	public void start(String ip,int port,int count,int createGap,IoHandler ioHandler) throws Exception{
+	public void start(String ip,int port,int count,int createGap,IoHandler ioHandler)throws IOException{
 		connectionManager.start(ioHandler);
 		this.lastCreateTime = System.currentTimeMillis();
 		//generate connection
@@ -57,7 +54,7 @@ public class TcpClients{
 	/**
 	 * 关闭
 	 */
-	public void shutdown() throws Exception{
+	public void shutdown() throws IOException{
 		Vector<TcpConnection> connections = getConnections();
 		while(connections.size()>0){
 			try {
@@ -65,7 +62,6 @@ public class TcpClients{
 				socket.close(TcpConnectionCloseReason.ShutDownTcpServer);
 			} catch (ArrayIndexOutOfBoundsException e) {
 				//donothing
-//				e.printStackTrace();
 			}	
 		}
 		//等待连接全部关闭；

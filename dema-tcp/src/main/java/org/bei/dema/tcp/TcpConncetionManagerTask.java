@@ -2,8 +2,8 @@ package org.bei.dema.tcp;
 
 
 /**
- * 作者：赵承北
- * 时间：2017年5月31日
+ * author：bei
+ * date：2017/5/31
 */
 public class TcpConncetionManagerTask implements Runnable {
 	/**

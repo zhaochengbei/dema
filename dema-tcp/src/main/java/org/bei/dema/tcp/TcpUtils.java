@@ -1,5 +1,6 @@
 package org.bei.dema.tcp;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -14,7 +15,7 @@ public class TcpUtils {
 	/**
 	 * the head of packet is a int,is the value of packet,the length not incloud itself length
 	 */
-	static public ByteBuffer request(String host,int port,ByteBuffer requestData,int timeout)throws Exception{
+	static public ByteBuffer request(String host,int port,ByteBuffer requestData,int timeout)throws IOException{
 		//connect
 		Socket socket = new Socket();
 		socket.setTcpNoDelay(true);

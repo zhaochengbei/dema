@@ -1,5 +1,6 @@
 package org.bei.dema.tcp;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.TimerTask;
@@ -85,9 +86,10 @@ public class TcpServer {
 						connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
 					}
 				}
-			}catch (Exception e) {
-				//do nothing
+			}catch (ArrayIndexOutOfBoundsException e) {
 //				e.printStackTrace();
+			}catch(IOException e){
+				//
 			}
 			
 		}
@@ -123,7 +125,14 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	public void start(int port,IoHandler ioHandler) throws Exception{
+	public void configThread(int checkReadThreadCount,int exeIoTaskThreadCount){
+		connectionManager.checkReadThreadCount = checkReadThreadCount;
+		connectionManager.exeIoTaskThreadCount = exeIoTaskThreadCount;
+	}
+	/**
+	 * 
+	 */
+	public void start(int port,IoHandler ioHandler) throws IOException{
 		connectionManager.start(ioHandler);
 		accepter = new ServerSocket(port);
 		acceptSocketThread.start();
@@ -140,8 +149,7 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	public void shutdown() throws Exception{
-//		acceptSocketThread.interrupt();
+	public void shutdown() throws IOException{
 		accepter.close();
 		checkReadIdleTimeOutThreads.shutdown();
 		connectionManager.shutdown();

@@ -18,7 +18,7 @@ public interface IoHandler {
 	public void onRead(TcpConnection connection) throws Exception;
 	
 	/**
-	 * first remove connection from collection,second call the method;
+	 * first remove connection from collections,second call the method;
 	 */
 	public void onClose(TcpConnection connection,String reason) throws Exception;
 }
