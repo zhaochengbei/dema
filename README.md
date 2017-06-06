@@ -15,8 +15,7 @@ static private IoHandler ioHandler = new IoHandler() {
 
 			System.out.println("s_onRead,"+connection.socket);
 			ByteBuffer data = ConnectionUtils.readPacket(connection, 0,4, 4,256);
-			ByteBuffer byteBuffer = getTestPacket();
-			connection.writeAndFlush(byteBuffer);
+			connection.writeAndFlush(data);
 		}
 		
 		public void onClose(TcpConnection connection,String reason) throws Exception{
