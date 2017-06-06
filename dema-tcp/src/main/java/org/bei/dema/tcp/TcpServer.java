@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.TimerTask;
 import java.util.Vector;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -50,10 +49,9 @@ public class TcpServer {
 						
 					}
 				}catch (Exception e) {
-					//accepter be close，end this thread
+					//open too many file or accepter be close
+					e.printStackTrace();
 					break;
-					//can not reach here
-//					e.printStackTrace();
 				}
 			}
 			
@@ -64,9 +62,6 @@ public class TcpServer {
 	 * 
 	 */
 	private Thread acceptSocketThread = new Thread(acceptSocketLogic,"AcceptSocket_0");
-//	/**
-//	 * max heard gap
-//	 */
 	/**
 	 * 
 	 */
@@ -81,15 +76,15 @@ public class TcpServer {
 				long time = System.currentTimeMillis();
 				for (int i = 0; i < getConnections().size(); i++) {
 					TcpConnection connection = getConnections().get(i);
-					if(maxConnectionCount !=0 &&connection.isClose() == false&&time - connection.lastReadTime> maxReadIdleTime){
+					if(maxReadIdleTime !=0 &&connection.isClose() == false&&time - connection.lastReadTime> maxReadIdleTime){
 						//use part will receive a close event;
 						connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
 					}
 				}
 			}catch (ArrayIndexOutOfBoundsException e) {
-//				e.printStackTrace();
+				//thread confict,need do nothing
 			}catch(IOException e){
-				//
+				
 			}
 			
 		}
@@ -136,7 +131,7 @@ public class TcpServer {
 		connectionManager.start(ioHandler);
 		accepter = new ServerSocket(port);
 		acceptSocketThread.start();
-		checkReadIdleTimeOutThreads.scheduleAtFixedRate(checkReadIdleTimeOutLogic, 10,10, TimeUnit.MICROSECONDS);
+		checkReadIdleTimeOutThreads.scheduleAtFixedRate(checkReadIdleTimeOutLogic, 10,10, TimeUnit.MILLISECONDS);
 	}
 	/**
 	 * 

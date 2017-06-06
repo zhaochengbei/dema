@@ -50,12 +50,12 @@ static private IoHandler ioHandler = new IoHandler() {
     public static void main( String[] args )
     {
     	try {
-    		int testCount = 10;
-    		while(testCount-- >0){
+//    		int testCount = 10;
+//    		while(testCount-- >0){
     			testClients();
-    			Thread.sleep(10*1000);
-    		}
-    		executorService.shutdown();
+    			Thread.sleep(100*1000);
+//    		}
+    		tcpClients.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -63,19 +63,19 @@ static private IoHandler ioHandler = new IoHandler() {
     }
     static public void testClients()throws Exception{
     	tcpClients = new TcpClients();
-		tcpClients.start("localhost", 9090, 1000, 1*TimeUnit.MILLISECONDS.ordinal(), ioHandler);
+		tcpClients.start("192.168.0.103", 9090, 50000, 1*TimeUnit.MILLISECONDS.ordinal(), ioHandler);
 		/** 
 		 * 给线程分配任务，让线程发送消息给服务器；
 		 */
-		int writeCount = 20000;
+		int writeCount = 200000;
 		while(writeCount -- >0){
 			Vector<TcpConnection> connections = tcpClients.getConnections();
 			System.out.println("last connection "+connections.size());
 			long time = System.currentTimeMillis();
 			for (int i = 0; i < connections.size(); i++) {
 				TcpConnection connection = (TcpConnection) connections.get(i);
-				if(time - connection.lastWriteTime> 1000){
-					ByteBuffer byteBuffer = getTestPacket();
+				if(time - connection.lastWriteTime> 3000){
+						ByteBuffer byteBuffer = getTestPacket();
 					WriteTask dataTask = new WriteTask();
 					dataTask.connection = connection;
 					dataTask.data = byteBuffer;

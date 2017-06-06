@@ -61,10 +61,10 @@ public class TcpClients{
 				TcpConnection socket = connections.get(0);
 				socket.close(TcpConnectionCloseReason.ShutDownTcpServer);
 			} catch (ArrayIndexOutOfBoundsException e) {
-				//donothing
+				//do nothing
 			}	
 		}
-		//等待连接全部关闭；
+		
 		connectionManager.shutdown();
 	}
 }

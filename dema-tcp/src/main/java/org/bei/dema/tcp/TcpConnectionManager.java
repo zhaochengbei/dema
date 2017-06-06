@@ -184,7 +184,7 @@ public class TcpConnectionManager {
 		exeTaskThreads = Executors.newFixedThreadPool(exeIoTaskThreadCount, exeTaskThreadFactory);
 		
 		//start thread
-		checkSocketCloseThreads.scheduleAtFixedRate(checkSocketCloseLogic,1, 1, TimeUnit.MILLISECONDS);
+		checkSocketCloseThreads.scheduleAtFixedRate(checkSocketCloseLogic,10, 10, TimeUnit.MILLISECONDS);
 		for (int i = 0; i < checkReadThreadCount; i++) {
 			checkSocketReadbleThreads.scheduleAtFixedRate(checkSocketReadbleLogics.get(i),1, 1, TimeUnit.MILLISECONDS);
 		}

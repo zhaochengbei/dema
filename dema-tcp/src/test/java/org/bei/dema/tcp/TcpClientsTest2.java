@@ -29,7 +29,6 @@ public class TcpClientsTest2 {
                     System.out.println(line);    
                 }   
     			Thread.sleep(10000);
-//    			p.
     			p.destroyForcibly();
     			
 			} catch (Exception e) {

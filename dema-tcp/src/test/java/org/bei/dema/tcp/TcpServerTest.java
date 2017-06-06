@@ -44,7 +44,7 @@ public class TcpServerTest
     {
     	try {
     		tcpServer = new TcpServer();
-    		tcpServer.config(10000,5000);
+    		tcpServer.config(100000,0);
     		tcpServer.start(9090, ioHandler);
 
             System.out.println( "Hello World!" );
