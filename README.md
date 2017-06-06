@@ -5,7 +5,6 @@ compare with netty:<br/>
 when 40 000 tcp connection connect to server deploy in linux,per connection per 3 second send a packet and when server receive will send same packet to client,netty will cost 400m memory and 200%cpu，dema only cost 100m memory and 150%cpu。
 
 simple:<br/>
-
 static private IoHandler ioHandler = new IoHandler() {
 		
 		public void onRead(TcpConnection connection) throws Exception{
