@@ -7,6 +7,10 @@ when 40 000 tcp connection connect to server deploy in linux,per connection per 
 simple:<br/>
 static private IoHandler ioHandler = new IoHandler() {
 		
+		public void onAccept(TcpConnection connection) throws Exception{
+			System.out.println("s_onAccept,"+connection.socket);
+		}
+		
 		public void onRead(TcpConnection connection) throws Exception{
 
 			System.out.println("s_onRead,"+connection.socket);
@@ -19,9 +23,6 @@ static private IoHandler ioHandler = new IoHandler() {
 			System.out.println("s_onClose,reason="+connection.closeReason+","+connection.socket);
 		}
 		
-		public void onAccept(TcpConnection connection) throws Exception{
-			System.out.println("s_onAccept,"+connection.socket);
-		}
 	};
 	
 tcpServer = new TcpServer();<br/>
