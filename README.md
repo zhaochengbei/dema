@@ -25,5 +25,5 @@ static private IoHandler ioHandler = new IoHandler() {
 	};
 	
 tcpServer = new TcpServer();<br/>
-tcpServer.config(100000,100*1000);//10 0000 is max connection count ,100*1000 is read idle timeout time unit is millsecond<br/>
+tcpServer.config(100000,100000);//100 000 is max connection count ,100 000 is read idle timeout time unit is millsecond<br/>
 tcpServer.start(9090, ioHandler);<br/>
