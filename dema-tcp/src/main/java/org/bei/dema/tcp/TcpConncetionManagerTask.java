@@ -2,7 +2,7 @@ package org.bei.dema.tcp;
 
 
 /**
- * author：bei
+ * author：zhaochengbei
  * date：2017/5/31
 */
 public class TcpConncetionManagerTask implements Runnable {

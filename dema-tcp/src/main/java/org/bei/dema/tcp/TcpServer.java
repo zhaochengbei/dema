@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * author：bei
+ * author：zhaochengbei
  * date：2017/5/31
 */
 public class TcpServer {
@@ -65,7 +65,11 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	public int maxReadIdleTime = 0;
+	public int readIdleTimeoutSeconds = 0;
+	/**
+	 * 
+	 */
+	public int readIdleCheckGapSeconds = 1;
 	/**
 	 * 
 	 */
@@ -76,7 +80,7 @@ public class TcpServer {
 				long time = System.currentTimeMillis();
 				for (int i = 0; i < getConnections().size(); i++) {
 					TcpConnection connection = getConnections().get(i);
-					if(maxReadIdleTime !=0 &&connection.isClose() == false&&time - connection.lastReadTime> maxReadIdleTime){
+					if(readIdleTimeoutSeconds !=0 &&connection.isClose() == false&&time - connection.lastReadTime> readIdleTimeoutSeconds*1000){
 						//use part will receive a close event;
 						connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
 					}
@@ -111,11 +115,11 @@ public class TcpServer {
 	/**
 	 * 
 	 * @param maxConnection
-	 * @param maxReadIdleTime ,timeunit is millsecond
+	 * @param readIdleTimeoutSeconds ,timeunit is millsecond
 	 */
-	public void config(int maxConnection,int maxReadIdleTime){
-		this.maxConnectionCount = maxConnection;
-		this.maxReadIdleTime = maxReadIdleTime;
+	public void config(int maxConnectionCount,int readIdleTimeoutSeconds){
+		this.maxConnectionCount = maxConnectionCount;
+		this.readIdleTimeoutSeconds = readIdleTimeoutSeconds;
 	}
 	/**
 	 * 
@@ -127,11 +131,19 @@ public class TcpServer {
 	/**
 	 * 
 	 */
+	public void configCheckGap(int readCheckGapSeconds,int closeCheckGapSeconds,int readIdleCheckGapSeconds){
+		connectionManager.readCheckGapMillSeconds = readCheckGapSeconds;
+		connectionManager.closeCheckGapMillSeconds = closeCheckGapSeconds;
+		this.readIdleCheckGapSeconds = readIdleCheckGapSeconds;
+	}
+	/**
+	 * 
+	 */
 	public void start(int port,IoHandler ioHandler) throws IOException{
 		connectionManager.start(ioHandler);
 		accepter = new ServerSocket(port);
 		acceptSocketThread.start();
-		checkReadIdleTimeOutThreads.scheduleAtFixedRate(checkReadIdleTimeOutLogic, 10,10, TimeUnit.MILLISECONDS);
+		checkReadIdleTimeOutThreads.scheduleAtFixedRate(checkReadIdleTimeOutLogic, readIdleCheckGapSeconds,readIdleCheckGapSeconds, TimeUnit.SECONDS);
 	}
 	/**
 	 * 

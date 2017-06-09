@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * author：bei
+ * author：zhaochengbei
  * date：2017/5/25
 */
 public class ConnectionUtils {
@@ -22,52 +22,58 @@ public class ConnectionUtils {
 	 */
 	static public ByteBuffer readPacket(TcpConnection connection,int lengthFieldOffset,int lengthOfLength,int lengthAdjustment,int maxFrameLength) throws IOException,TcpException{
 		//if length has not read ,value of packetlength is -1;
-		if(connection.packetLength == -1){
-			if(connection.byteBuffer == null){
-				connection.byteBuffer = ByteBuffer.allocate(lengthFieldOffset+lengthOfLength);
+		if(connection.packet == null){
+			connection.packet = new TcpPacket();
+		}
+		TcpPacket packet = (TcpPacket)connection.packet;
+	
+		if(packet.packetLength == -1){
+			if(packet.byteBuffer == null){
+				packet.byteBuffer = ByteBuffer.allocate(lengthFieldOffset+lengthOfLength);
 			} 
-			connection.read(connection.byteBuffer);
-			if(connection.byteBuffer.remaining() != 0){
+			connection.read(packet.byteBuffer);
+			if(packet.byteBuffer.remaining() != 0){
 				return null;
 			}
 			//read value of length
-			connection.byteBuffer.flip();
-			connection.byteBuffer.position(lengthFieldOffset);
+			packet.byteBuffer.flip();
+			packet.byteBuffer.position(lengthFieldOffset);
 			switch(lengthOfLength){
 			case 1:
-				connection.packetLength = connection.byteBuffer.get();
+				packet.packetLength = packet.byteBuffer.get();
 				break;
 			case 2:
-				connection.packetLength = connection.byteBuffer.getShort();
+				packet.packetLength = packet.byteBuffer.getShort();
 				break;
 			case 4:
-				connection.packetLength = connection.byteBuffer.getInt();
+				packet.packetLength = packet.byteBuffer.getInt();
 				break;
 			default:
 				throw new TcpException("lengthOfLength only can be 1,2,4");
 			}
 			//check value of length
-			if(connection.packetLength > maxFrameLength){
+			if(packet.packetLength > maxFrameLength){
 				throw new TcpException("packet length out of limit");
 			}
 			//create a new buffer with lengh of packet 
-			ByteBuffer newByteBuffer = ByteBuffer.allocate(connection.packetLength+lengthAdjustment);
-			connection.byteBuffer.flip();
-			newByteBuffer.put(connection.byteBuffer);
-			connection.byteBuffer.clear();
-			connection.byteBuffer = newByteBuffer;
+			ByteBuffer newByteBuffer = ByteBuffer.allocate(packet.packetLength+lengthAdjustment);
+			packet.byteBuffer.flip();
+			newByteBuffer.put(packet.byteBuffer);
+			packet.byteBuffer.clear();
+			packet.byteBuffer = newByteBuffer;
 		}
 		//if length of packet has read
-		if(connection.packetLength != -1){
-			connection.read(connection.byteBuffer);
+		if(packet.packetLength != -1){
+			connection.read(packet.byteBuffer);
 			
-			if(connection.byteBuffer.remaining() != 0){
+			if(packet.byteBuffer.remaining() != 0){
 				return null;
 			}
 			
-			ByteBuffer result = connection.byteBuffer;
-			connection.byteBuffer = null;
-			connection.packetLength = -1;
+			ByteBuffer result = packet.byteBuffer;
+			packet.byteBuffer = null;
+			packet.packetLength = -1;
+			connection.packet = null;
 			return result;
 		}
 		return null;

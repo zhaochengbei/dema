@@ -1,6 +1,6 @@
 package org.bei.dema.tcp;
 /**
- * author：bei
+ * author：zhaochengbei
  * date：2017/6/2
 */
 public class TcpConnectionCloseReason {

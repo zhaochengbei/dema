@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.util.Vector;
 
 /**
- * author：bei
+ * author：zhaochengbei
  * date：2017/5/25
 */
 public class TcpClients{
@@ -28,7 +28,7 @@ public class TcpClients{
 	 * @param ip
 	 * @param port
 	 * @param count
-	 * @param createGap
+	 * @param createGap gap of create connection
 	 * @param ioHandler
 	 * @throws Exception
 	 */

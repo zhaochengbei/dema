@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * author：bei
+ * author：zhaochengbei
  * date：2017/5/31
 */
 public class TcpConnectionManager {
@@ -28,6 +28,11 @@ public class TcpConnectionManager {
 
 	public int checkReadThreadCount = 1;
 	public int exeIoTaskThreadCount = Runtime.getRuntime().availableProcessors()*5;
+	/**
+	 * 
+	 */
+	public int readCheckGapMillSeconds = 1;
+	public int closeCheckGapMillSeconds = 100;
 	/**
 	 * 
 	 */
@@ -184,9 +189,9 @@ public class TcpConnectionManager {
 		exeTaskThreads = Executors.newFixedThreadPool(exeIoTaskThreadCount, exeTaskThreadFactory);
 		
 		//start thread
-		checkSocketCloseThreads.scheduleAtFixedRate(checkSocketCloseLogic,10, 10, TimeUnit.MILLISECONDS);
+		checkSocketCloseThreads.scheduleAtFixedRate(checkSocketCloseLogic,closeCheckGapMillSeconds, closeCheckGapMillSeconds, TimeUnit.MILLISECONDS);
 		for (int i = 0; i < checkReadThreadCount; i++) {
-			checkSocketReadbleThreads.scheduleAtFixedRate(checkSocketReadbleLogics.get(i),1, 1, TimeUnit.MILLISECONDS);
+			checkSocketReadbleThreads.scheduleAtFixedRate(checkSocketReadbleLogics.get(i),readCheckGapMillSeconds, readCheckGapMillSeconds, TimeUnit.MILLISECONDS);
 		}
 		distributionTaskThreads.scheduleAtFixedRate(distributionTaskLogic, 1, 1, TimeUnit.MILLISECONDS);
 	}

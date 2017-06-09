@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 /**
- * author：bei
+ * author：zhaochengbei
  * date：2017/5/31
 */
 public class TcpConnection {
@@ -20,16 +20,21 @@ public class TcpConnection {
 	 * this lib use
 	 */
 	public boolean inReading;
+//	
+//	/**
+//	 * use part use 
+//	 */
+//	public ByteBuffer byteBuffer;
+//	
+//	/**
+//	 * use part use
+//	 */
+//	public int packetLength = -1;
 	
 	/**
-	 * use part use 
+	 * 
 	 */
-	public ByteBuffer byteBuffer;
-	
-	/**
-	 * use part use
-	 */
-	public int packetLength = -1;
+	public Object packet; 
 	
 	/**
 	 * use part use
