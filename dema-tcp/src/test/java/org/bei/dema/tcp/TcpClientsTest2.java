@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * 作者：赵承北
- * 时间：2017年6月2日
+ * author：zhaochengbei
+ * date：2017/6/2
 */
 public class TcpClientsTest2 {
 

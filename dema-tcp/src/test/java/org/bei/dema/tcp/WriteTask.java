@@ -2,9 +2,11 @@ package org.bei.dema.tcp;
 
 import java.nio.ByteBuffer;
 
+import org.bei.dema.tcp.TcpConnection;
+
 /**
- * 作者：赵承北
- * 时间：2017年5月26日
+ * author：zhaochengbei
+ * date：2017/5/26
 */
 public class WriteTask implements Runnable {
 	public TcpConnection connection;
