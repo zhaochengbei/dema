@@ -82,7 +82,7 @@ public class TcpConnection {
 	 * @throws Exception
 	 */
 	public void writeAndFlush(ByteBuffer byteBuffer) throws IOException{
-		byteBuffer.flip();
+//		byteBuffer.flip();
 		byte[] bytes = new byte[byteBuffer.remaining()];
 		byteBuffer.get(bytes);
 		try {

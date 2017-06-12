@@ -27,7 +27,6 @@ public class HttpContext {
 	public void write(HttpResponse response) throws IOException{
 		//
 		this.response = response;
-		
 		HttpConnectionUtils.writeHttpResponse(connection, response,request);
 	}
 	/**
@@ -35,9 +34,9 @@ public class HttpContext {
 	 */
 	public void close()throws IOException{
 		if(response != null){
-			connection.close(response.status.phrase);
+			connection.close(response.phrase);
 		}else{
-			connection.close(HttpResponseStatus.INTERNAL_SERVER_ERROR.phrase);
+			connection.close(HttpResponseStatusPhrase.map.get(HttpResponseStatus.INTERNAL_SERVER_ERROR));
 		}
 		
 	}

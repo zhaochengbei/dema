@@ -84,6 +84,7 @@ static private IoHandler ioHandler = new IoHandler() {
 						ByteBuffer byteBuffer = getTestPacket();
 					WriteTask dataTask = new WriteTask();
 					dataTask.connection = connection;
+					byteBuffer.flip();
 					dataTask.data = byteBuffer;
 					executorService.execute(dataTask);
 					connection.lastWriteTime = System.currentTimeMillis();

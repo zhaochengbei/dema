@@ -21,6 +21,7 @@ public class HttpServerTest {
 			System.out.println("onRequest"+request);
 			HttpResponse response = new HttpResponse();
 			response.status = HttpResponseStatus.OK;
+			response.phrase = HttpResponseStatusPhrase.map.get(response.status);
 			response.content = "hello world!".getBytes();
 			context.write(response);
 			context.close();

@@ -38,6 +38,7 @@ public class TcpServerTest
 				if(data == null){
 					break;
 				}
+				data.flip();
 				connection.writeAndFlush(data);
 			}
 			

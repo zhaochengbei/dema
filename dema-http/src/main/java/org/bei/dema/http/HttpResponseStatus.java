@@ -1,17 +1,23 @@
 package org.bei.dema.http;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * author：zhaochengbei
  * date：2017/6/8
 */
-public enum HttpResponseStatus {
-	OK(200,"OK"),
-	BAD_REQUEST(400,"Bad Request"),
-	INTERNAL_SERVER_ERROR(500,"Internal Server Error")
-	;
-	public int code;
-	public String phrase;
-	private HttpResponseStatus(int code,String phrase){
-		this.code = code;
-		this.phrase = phrase;
-	}
+public class HttpResponseStatus {
+	/**
+	 * 
+	 */
+	static public int OK = 200;
+	/**
+	 * 
+	 */
+	static public int BAD_REQUEST = 400;
+	/**
+	 * 
+	 */
+	static public int INTERNAL_SERVER_ERROR = 500;
 }

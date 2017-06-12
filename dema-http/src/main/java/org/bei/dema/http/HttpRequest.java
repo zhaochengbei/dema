@@ -8,11 +8,7 @@ import java.util.Map;
  * author：zhaochengbei
  * date：2017/6/7
 */
-public class HttpRequest {
-	/**
-	 * 
-	 */
-	public StringBuffer stringBuffer = new StringBuffer();
+public class HttpRequest extends HttpPacket{
 	
 	/**
 	 * 
@@ -22,12 +18,7 @@ public class HttpRequest {
 	/**
 	 * 
 	 */
-	public String uri;
-	
-	/**
-	 * 
-	 */
-	public String version;
+	public String uri = "/";
 	
 	/**
 	 * 
@@ -36,24 +27,16 @@ public class HttpRequest {
 	/**
 	 * 
 	 */
-	public String connection;
-	/**
-	 * 
-	 */
-	public Map<String, Object> otherHead = new HashMap<String, Object>();
-	
-	/**
-	 * 
-	 */
-	public boolean headParseComplete;
-	
-	/**
-	 * 
-	 */
-	public int contentLength;
-	
-	/**
-	 * 
-	 */
-	public byte[] content;
+	@Override
+	public String toString(){
+		StringBuffer stringBuffer = new StringBuffer();
+		stringBuffer.append("[");
+		stringBuffer.append("method=");
+		stringBuffer.append(method);
+		stringBuffer.append(",uri=");
+		stringBuffer.append(uri);
+		stringBuffer.append(super.toString());
+		stringBuffer.append("]");
+		return stringBuffer.toString();
+	}
 }
