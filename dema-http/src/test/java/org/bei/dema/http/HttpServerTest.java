@@ -16,9 +16,9 @@ public class HttpServerTest {
 	 */
 	static private HttpHandler httpHandler = new HttpHandler() {
 		
-		public void onHttpRequest(HttpRequest request, HttpContext context)throws IOException {
+		public void onHttpRequest(HttpRequest request, HttpContext context){
 			// TODO Auto-generated method stub
-			System.out.println("onRequest"+request);
+//			System.out.println("onRequest="+request);
 			HttpResponse response = new HttpResponse();
 			response.status = HttpResponseStatus.OK;
 			response.phrase = HttpResponseStatusPhrase.map.get(response.status);
@@ -29,9 +29,12 @@ public class HttpServerTest {
 	};
 	static public void main(String[] args){
 		try {
-			httpServer.config(1000, 0);
+			httpServer.config(1000, 10);
 			httpServer.start(8090, httpHandler);
 			System.out.println("server started");
+//			while(true){
+//				Thread.sleep(10);
+//			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

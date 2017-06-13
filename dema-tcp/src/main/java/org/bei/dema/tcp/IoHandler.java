@@ -10,15 +10,15 @@ public interface IoHandler {
 	/**
 	 * 
 	 */
-	public void onAccept(TcpConnection connection) throws Exception;
+	public void onAccept(TcpConnection connection);
 	
 	/**
 	 * 
 	 */
-	public void onRead(TcpConnection connection) throws Exception;
+	public void onRead(TcpConnection connection);
 	
 	/**
 	 * first remove connection from collections,second call the method;
 	 */
-	public void onClose(TcpConnection connection,String reason) throws Exception;
+	public void onClose(TcpConnection connection,String reason);
 }

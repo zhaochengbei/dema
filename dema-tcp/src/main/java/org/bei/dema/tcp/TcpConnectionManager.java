@@ -44,7 +44,7 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	private LinkedBlockingQueue<TcpConncetionManagerTask> tasks = new LinkedBlockingQueue<TcpConncetionManagerTask>();
+	private LinkedBlockingQueue<TcpConnectionManagerTask> tasks = new LinkedBlockingQueue<TcpConnectionManagerTask>();
 	/**
 	 * 
 	 */
@@ -97,14 +97,14 @@ public class TcpConnectionManager {
 					if(connection.isClose() == true){
 						remove(connection);
 						i--;
-						TcpConncetionManagerTask tcpTask = new TcpConncetionManagerTask(TcpConnectionManagerTaskType.CLOSE, connection, ioHandler);
+						TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.CLOSE, connection, ioHandler);
 						tasks.add(tcpTask);
 						continue;
 					}
 				}
-			}catch (Exception e) {
+			}catch (ArrayIndexOutOfBoundsException e ) {
 				//can not reach here
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 		}
 	};
@@ -131,12 +131,16 @@ public class TcpConnectionManager {
 					 */
 					if(connection.inReading == false&&connection.available()>0){
 						connection.inReading = true;
-						TcpConncetionManagerTask tcpTask = new TcpConncetionManagerTask(TcpConnectionManagerTaskType.READ, connection, ioHandler);
+						TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.READ, connection, ioHandler);
 				    	tasks.add(tcpTask);
 					}
 				}
-			}catch (Exception e) {
+			}catch (ArrayIndexOutOfBoundsException e) {
+				e.printStackTrace();
 				//do nothing
+			}catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
 			}
 		}
 	};
@@ -150,7 +154,7 @@ public class TcpConnectionManager {
 			try {
 				while(tasks.size()>0){
 					//only here take task ,so never block;
-					TcpConncetionManagerTask task = tasks.take();
+					TcpConnectionManagerTask task = tasks.take();
 					exeTaskThreads.execute(task);
 				}
 			} catch (Exception e) {
@@ -231,7 +235,7 @@ public class TcpConnectionManager {
 			}
 		}
 		connectionGroup.add(connection);
-		TcpConncetionManagerTask task = new TcpConncetionManagerTask(TcpConnectionManagerTaskType.ACCEPT, connection, ioHandler);
+		TcpConnectionManagerTask task = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.ACCEPT, connection, ioHandler);
 		tasks.add(task);
 	}
 	/**

@@ -20,16 +20,6 @@ public class TcpConnection {
 	 * this lib use
 	 */
 	public boolean inReading;
-//	
-//	/**
-//	 * use part use 
-//	 */
-//	public ByteBuffer byteBuffer;
-//	
-//	/**
-//	 * use part use
-//	 */
-//	public int packetLength = -1;
 	
 	/**
 	 * 
@@ -81,7 +71,7 @@ public class TcpConnection {
 	 * @param byteBuffer
 	 * @throws Exception
 	 */
-	public void writeAndFlush(ByteBuffer byteBuffer) throws IOException{
+	public void writeAndFlush(ByteBuffer byteBuffer){
 //		byteBuffer.flip();
 		byte[] bytes = new byte[byteBuffer.remaining()];
 		byteBuffer.get(bytes);
@@ -98,7 +88,7 @@ public class TcpConnection {
 	 * @return
 	 * @throws Exception
 	 */
-	public int available() throws IOException{
+	public int available(){
 		int available = 0;
 		try {
 			available = socket.getInputStream().available();
@@ -112,7 +102,7 @@ public class TcpConnection {
 	 * @param byteBuffer
 	 * @throws Exception
 	 */
-	public void read(ByteBuffer byteBuffer) throws IOException{
+	public void read(ByteBuffer byteBuffer){
 		try {
 			int length = available();
 			if(length > byteBuffer.remaining()){
@@ -132,11 +122,18 @@ public class TcpConnection {
 	 * 
 	 * @throws Exception
 	 */
-	public void close(String reason) throws IOException{
+	public void close(String reason){
 		if(socket.isClosed() == true){
 			return;
 		}
 		this.closeReason = reason;
-		socket.close();
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			//never reach here,because have not block oprate socket
+		}
+			
+		
 	}
 }

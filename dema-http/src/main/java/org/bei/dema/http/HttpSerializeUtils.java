@@ -3,7 +3,7 @@ package org.bei.dema.http;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import org.bei.dema.tcp.HttpParseException;
+import org.bei.dema.http.HttpParseException;
 
 /**
  * author：zhaochengbei

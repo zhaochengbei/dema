@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import org.bei.dema.tcp.HttpParseException;
+import org.bei.dema.http.HttpParseException;
 import org.bei.dema.tcp.TcpConnection;
 
 /**
@@ -14,7 +14,7 @@ import org.bei.dema.tcp.TcpConnection;
 */
 public class HttpUtils {
 
-	static public HttpResponse request(String host,int port,HttpRequest request,int timeout)throws Exception{
+	static public HttpResponse request(String host,int port,HttpRequest request,int timeout)throws IOException, InterruptedException, HttpParseException{
 		Socket socket = new Socket();
 		try {
 			//connect

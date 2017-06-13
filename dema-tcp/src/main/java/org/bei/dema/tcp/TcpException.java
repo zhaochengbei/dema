@@ -9,6 +9,6 @@ public class TcpException extends Exception {
 	 * @param message
 	 */
 	public TcpException(String message){
-		super(message);
+		super(message); 
 	}
 }

@@ -8,5 +8,5 @@ import java.io.IOException;
 */
 public interface HttpHandler {
 
-	public void onHttpRequest(HttpRequest request,HttpContext context)throws IOException;
+	public void onHttpRequest(HttpRequest request,HttpContext context);
 }

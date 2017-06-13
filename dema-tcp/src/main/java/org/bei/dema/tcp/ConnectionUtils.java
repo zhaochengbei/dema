@@ -1,6 +1,5 @@
 package org.bei.dema.tcp;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -20,7 +19,7 @@ public class ConnectionUtils {
 	 * @return next packet from connection
 	 * @throws Exception
 	 */
-	static public ByteBuffer readPacket(TcpConnection connection,int lengthFieldOffset,int lengthOfLength,int lengthAdjustment,int maxFrameLength) throws IOException,TcpException{
+	static public ByteBuffer readPacket(TcpConnection connection,int lengthFieldOffset,int lengthOfLength,int lengthAdjustment,int maxFrameLength) throws TcpException{
 		//if length has not read ,value of packetlength is -1;
 		if(connection.packet == null){
 			connection.packet = new TcpPacket();

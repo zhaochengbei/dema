@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 
 import javax.print.DocFlavor.READER;
 
-import org.bei.dema.tcp.HttpParseException;
+import org.bei.dema.http.HttpParseException;
 import org.bei.dema.tcp.IoHandler;
 import org.bei.dema.tcp.TcpConnection;
 import org.bei.dema.tcp.TcpServer;
@@ -24,7 +24,7 @@ public class HttpServer {
 	 */
 	private IoHandler ioHandler = new IoHandler() {
 		
-		public void onRead(TcpConnection connection) throws Exception {
+		public void onRead(TcpConnection connection){
 			//创建请求对象；
 			if(connection.packet == null){
 				connection.packet = new HttpRequest();
@@ -48,7 +48,7 @@ public class HttpServer {
 			}
 		}
 		
-		private void sendErrorAndCloseConnection(TcpConnection connection,int responseStatus) throws IOException{
+		private void sendErrorAndCloseConnection(TcpConnection connection,int responseStatus){
     		HttpResponse response = new HttpResponse();
     		response.status = HttpResponseStatus.BAD_REQUEST;
     		response.phrase = HttpResponseStatusPhrase.map.get(response.status);
@@ -57,12 +57,12 @@ public class HttpServer {
     		connection.close(response.phrase);
 		}
 		
-		public void onClose(TcpConnection connection, String reason) throws Exception {
+		public void onClose(TcpConnection connection, String reason){
 			//do nothing;
 			
 		}
 		
-		public void onAccept(TcpConnection connection) throws Exception {
+		public void onAccept(TcpConnection connection){
 			//do nothing
 		}
 	};
@@ -82,6 +82,7 @@ public class HttpServer {
 	 */
 	public void start(int port,HttpHandler httpHandler) throws IOException{
 		this.httpHandler = httpHandler;
+//		tcpServer.configCheckGap(10, 10, 1);
 		tcpServer.start(port, ioHandler);
 	}
 	/**

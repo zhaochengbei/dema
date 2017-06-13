@@ -87,8 +87,6 @@ public class TcpServer {
 				}
 			}catch (ArrayIndexOutOfBoundsException e) {
 				//thread confict,need do nothing
-			}catch(IOException e){
-				
 			}
 			
 		}
@@ -131,9 +129,9 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	public void configCheckGap(int readCheckGapSeconds,int closeCheckGapSeconds,int readIdleCheckGapSeconds){
-		connectionManager.readCheckGapMillSeconds = readCheckGapSeconds;
-		connectionManager.closeCheckGapMillSeconds = closeCheckGapSeconds;
+	public void configCheckGap(int readCheckGapMillSeconds,int closeCheckGapMillSeconds,int readIdleCheckGapSeconds){
+		connectionManager.readCheckGapMillSeconds = readCheckGapMillSeconds;
+		connectionManager.closeCheckGapMillSeconds = closeCheckGapMillSeconds;
 		this.readIdleCheckGapSeconds = readIdleCheckGapSeconds;
 	}
 	/**

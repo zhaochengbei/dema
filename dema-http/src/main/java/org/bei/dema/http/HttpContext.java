@@ -24,7 +24,7 @@ public class HttpContext {
 	/**
 	 * 
 	 */
-	public void write(HttpResponse response) throws IOException{
+	public void write(HttpResponse response){
 		//
 		this.response = response;
 		HttpConnectionUtils.writeHttpResponse(connection, response,request);
@@ -32,7 +32,7 @@ public class HttpContext {
 	/**
 	 * 
 	 */
-	public void close()throws IOException{
+	public void close() {
 		if(response != null){
 			connection.close(response.phrase);
 		}else{

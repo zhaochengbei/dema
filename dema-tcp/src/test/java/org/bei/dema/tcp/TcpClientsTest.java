@@ -24,20 +24,33 @@ import org.bei.dema.tcp.TcpConnection;
 public class TcpClientsTest {
 static private IoHandler ioHandler = new IoHandler() {
 		
-		public void onRead(TcpConnection connection) throws Exception{
-			ByteBuffer data = ConnectionUtils.readPacket(connection, 0,4, 4,256);
-//			ByteBuffer byteBuffer = getTestPacket();
-			System.out.println("c_onRead,"+connection.socket);
+		public void onRead(TcpConnection connection){
+			try {
+				ByteBuffer data = ConnectionUtils.readPacket(connection, 0,4, 4,256);
+//				ByteBuffer byteBuffer = getTestPacket();
+				System.out.println("c_onRead,"+connection.socket);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
-		public void onClose(TcpConnection connection,String reason) throws Exception {
-			System.out.println("c_onClose,"+connection.socket);
+		public void onClose(TcpConnection connection,String reason) {
+//			try {
+				System.out.println("c_onClose,"+connection.socket);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+			
 		}
 		
-		public void onAccept(TcpConnection connection) throws Exception {
+		public void onAccept(TcpConnection connection) {
+//			try {
+				System.out.println("c_onAccept,"+connection.socket);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
 //			ByteBuffer byteBuffer = getTestPacket();
 //			connection.writeAndFlush(byteBuffer);
-			System.out.println("c_onAccept,"+connection.socket);
 		}
 	};
 	
@@ -56,11 +69,12 @@ static private IoHandler ioHandler = new IoHandler() {
     public static void main( String[] args )
     {
     	try {
-    		int testCount = 10;
+    		int testCount = 1;
     		while(testCount-- >0){
     			testClients();
-    			Thread.sleep(10*1000);
+    			Thread.sleep(20*1000);
     		}
+    		executorService.shutdown();
 //        		tcpClients.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -40,7 +40,9 @@ public class TcpClients{
 			if(System.currentTimeMillis() - lastCreateTime> createGap){
 				count--;
 				lastCreateTime += createGap;
-				
+				/**
+				 * general with nuli threads ,will get connect error and efficiency not up
+				 */
 				Socket socket = new Socket(ip,port);
 				TcpConnection connection = new TcpConnection(socket);
 				connectionManager.add(connection);
@@ -54,7 +56,7 @@ public class TcpClients{
 	/**
 	 * 关闭
 	 */
-	public void shutdown() throws IOException{
+	public void shutdown(){
 		Vector<TcpConnection> connections = getConnections();
 		while(connections.size()>0){
 			try {
