@@ -73,21 +73,33 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	private TimerTask checkReadIdleTimeOutLogic = new TimerTask() {
+	private Runnable checkReadIdleTimeOutLogic = new Runnable() {
 		
 		public void run() {
-			try {
-				long time = System.currentTimeMillis();
-				for (int i = 0; i < getConnections().size(); i++) {
-					TcpConnection connection = getConnections().get(i);
-					if(readIdleTimeoutSeconds !=0 &&connection.isClose() == false&&time - connection.lastReadTime> readIdleTimeoutSeconds*1000){
-						//use part will receive a close event;
-						connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
+			while(true){
+				try {
+					long time = System.currentTimeMillis();
+					for (int i = 0; i < getConnections().size(); i++) {
+						TcpConnection connection = getConnections().get(i);
+						if(readIdleTimeoutSeconds !=0 &&connection.isClose() == false&&time - connection.lastReadTime> readIdleTimeoutSeconds*1000){
+							//use part will receive a close event;
+							connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
+						}
 					}
+				}catch (ArrayIndexOutOfBoundsException e) {
+					//thread confict,need do nothing
 				}
-			}catch (ArrayIndexOutOfBoundsException e) {
-				//thread confict,need do nothing
+				
+				try {
+					Thread.sleep(readIdleCheckGapSeconds);
+				} catch (InterruptedException e) {
+					break;
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+				}
 			}
+			
+			
 			
 		}
 	};
@@ -141,7 +153,7 @@ public class TcpServer {
 		connectionManager.start(ioHandler);
 		accepter = new ServerSocket(port);
 		acceptSocketThread.start();
-		checkReadIdleTimeOutThreads.scheduleAtFixedRate(checkReadIdleTimeOutLogic, readIdleCheckGapSeconds,readIdleCheckGapSeconds, TimeUnit.SECONDS);
+		checkReadIdleTimeOutThreads.execute(checkReadIdleTimeOutLogic);
 	}
 	/**
 	 * 

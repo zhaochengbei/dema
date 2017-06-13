@@ -57,7 +57,7 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	private ScheduledExecutorService checkSocketReadbleThreads;
+	private ExecutorService checkSocketReadbleThreads;
 	private ThreadFactory checkSocketReadableThreadFactory = new ThreadFactory() {
 		private int index = 0;
 		public Thread newThread(Runnable r) {
@@ -87,32 +87,44 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	private TimerTask checkSocketCloseLogic = new TimerTask() {
+	private Runnable checkSocketCloseLogic = new Runnable(){
 		
 		public void run() {
-			try {
-				for (int i = 0; i < connections.size(); i++) {
-					TcpConnection connection = connections.get(i);
-					//check connection is  not close
-					if(connection.isClose() == true){
-						remove(connection);
-						i--;
-						TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.CLOSE, connection, ioHandler);
-						tasks.add(tcpTask);
-						continue;
+			while(true){
+				try {
+					for (int i = 0; i < connections.size(); i++) {
+						TcpConnection connection = connections.get(i);
+						//check connection is  not close
+						if(connection.isClose() == true){
+							remove(connection);
+							i--;
+							TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.CLOSE, connection, ioHandler);
+							tasks.add(tcpTask);
+							continue;
+						}
 					}
+				}catch (ArrayIndexOutOfBoundsException e ) {
+					//can not reach here
+//					e.printStackTrace();
+				}catch (Exception e) {
+					e.printStackTrace();
 				}
-			}catch (ArrayIndexOutOfBoundsException e ) {
-				//can not reach here
-//				e.printStackTrace();
+				try {
+					Thread.sleep(closeCheckGapMillSeconds);
+				} catch (InterruptedException e) {
+					break;
+//					e.printStackTrace();
+				}
+				
 			}
+			
 		}
 	};
 
 	/**
 	 * 
 	 */
-	private class CheckSocketReadbleLogic extends TimerTask {
+	private class CheckSocketReadbleLogic implements Runnable {
 		/**
 		 * 
 		 */
@@ -121,26 +133,34 @@ public class TcpConnectionManager {
 		 * 
 		 */
 		public void run() {
-			try {
-				for (int i = 0; i < connectionGroup.size(); i++) {
-					TcpConnection connection = connectionGroup.get(i);
-					//check connection is not can be read
-					/**
-					 * thread safe explain:
-					 * after a thread nodify,another thread don't know in immediately,there has a time gap between happy and to know; 
-					 */
-					if(connection.inReading == false&&connection.available()>0){
-						connection.inReading = true;
-						TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.READ, connection, ioHandler);
-				    	tasks.add(tcpTask);
+			while(true){
+				try {
+					for (int i = 0; i < connectionGroup.size(); i++) {
+						TcpConnection connection = connectionGroup.get(i);
+						//check connection is not can be read
+						/**
+						 * thread safe explain:
+						 * after a thread nodify,another thread don't know in immediately,there has a time gap between happy and to know; 
+						 */
+						if(connection.inReading == false&&connection.available()>0){
+							connection.inReading = true;
+							TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.READ, connection, ioHandler);
+					    	tasks.add(tcpTask);
+						}
 					}
+				
+				}catch (ArrayIndexOutOfBoundsException e) {
+//					e.printStackTrace();
+					//do nothing
+				}catch (Exception e) {
+					e.printStackTrace();
 				}
-			}catch (ArrayIndexOutOfBoundsException e) {
-				e.printStackTrace();
-				//do nothing
-			}catch (Exception e) {
-				// TODO: handle exception
-				e.printStackTrace();
+				try {
+					Thread.sleep(readCheckGapMillSeconds);
+				} catch (InterruptedException e) {
+					break;
+//					e.printStackTrace();
+				}
 			}
 		}
 	};
@@ -148,18 +168,28 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	private TimerTask distributionTaskLogic = new TimerTask() {
+	private Runnable distributionTaskLogic = new Runnable() {
 		
 		public void run() {
-			try {
-				while(tasks.size()>0){
-					//only here take task ,so never block;
-					TcpConnectionManagerTask task = tasks.take();
-					exeTaskThreads.execute(task);
+			while(true){
+				try {
+					while(tasks.size()>0){
+						//only here take task ,so never block;
+						TcpConnectionManagerTask task = tasks.take();
+						exeTaskThreads.execute(task);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					break;
+//					e.printStackTrace();
+
+				}
 			}
+			
 		}
 	};
 	/**
@@ -193,11 +223,11 @@ public class TcpConnectionManager {
 		exeTaskThreads = Executors.newFixedThreadPool(exeIoTaskThreadCount, exeTaskThreadFactory);
 		
 		//start thread
-		checkSocketCloseThreads.scheduleAtFixedRate(checkSocketCloseLogic,closeCheckGapMillSeconds, closeCheckGapMillSeconds, TimeUnit.MILLISECONDS);
+		checkSocketCloseThreads.execute(checkSocketCloseLogic);
 		for (int i = 0; i < checkReadThreadCount; i++) {
-			checkSocketReadbleThreads.scheduleAtFixedRate(checkSocketReadbleLogics.get(i),readCheckGapMillSeconds, readCheckGapMillSeconds, TimeUnit.MILLISECONDS);
+			checkSocketReadbleThreads.execute(checkSocketReadbleLogics.get(i));
 		}
-		distributionTaskThreads.scheduleAtFixedRate(distributionTaskLogic, 1, 1, TimeUnit.MILLISECONDS);
+		distributionTaskThreads.execute(distributionTaskLogic);
 	}
 	
 	
