@@ -30,7 +30,7 @@ public class HttpServerTest {
 	static public void main(String[] args){
 		try {
 			httpServer.config(1000, 10);
-			httpServer.start(8090, httpHandler);
+			httpServer.start(8080, httpHandler);
 			System.out.println("server started");
 //			while(true){
 //				Thread.sleep(10);
