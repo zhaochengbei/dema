@@ -64,7 +64,7 @@ public class HttpClientsTest {
 	
 	static public void main(String[] args){
 		try {
-			tcpClients.start("localhost", 8090, 100000, 1, ioHandler);
+			tcpClients.start("localhost", 8090, 10, 1000, ioHandler);
 //			while(true){
 //				System.out.println("connection count:"+tcpClients.getConnections().size());
 //				Thread.sleep(1);

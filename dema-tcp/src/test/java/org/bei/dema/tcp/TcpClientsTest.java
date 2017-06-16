@@ -28,7 +28,7 @@ static private IoHandler ioHandler = new IoHandler() {
 			try {
 				ByteBuffer data = ConnectionUtils.readPacket(connection, 0,4, 4,256);
 //				ByteBuffer byteBuffer = getTestPacket();
-				System.out.println("c_onRead,"+connection.socket);
+				System.out.println("c_onRead,"+connection.channel);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -36,7 +36,7 @@ static private IoHandler ioHandler = new IoHandler() {
 		
 		public void onClose(TcpConnection connection,String reason) {
 //			try {
-				System.out.println("c_onClose,"+connection.socket);
+				System.out.println("c_onClose,"+connection.channel);
 //			} catch (Exception e) {
 //				e.printStackTrace();
 //			}
@@ -45,7 +45,7 @@ static private IoHandler ioHandler = new IoHandler() {
 		
 		public void onAccept(TcpConnection connection) {
 //			try {
-				System.out.println("c_onAccept,"+connection.socket);
+				System.out.println("c_onAccept,"+connection.channel);
 //			} catch (Exception e) {
 //				e.printStackTrace();
 //			}
@@ -69,7 +69,7 @@ static private IoHandler ioHandler = new IoHandler() {
     public static void main( String[] args )
     {
     	try {
-    		int testCount = 1;
+    		int testCount = 10;
     		while(testCount-- >0){
     			testClients();
     			Thread.sleep(20*1000);
@@ -83,11 +83,11 @@ static private IoHandler ioHandler = new IoHandler() {
     }
     static public void testClients()throws Exception{
     	tcpClients = new TcpClients();
-		tcpClients.start("localhost", 9090, 10000, 1*TimeUnit.MILLISECONDS.ordinal(), ioHandler);
+		tcpClients.start("192.168.0.103", 9090, 1000, 1*TimeUnit.MILLISECONDS.ordinal(), ioHandler);
 		/** 
 		 * 给线程分配任务，让线程发送消息给服务器；
 		 */
-		int writeCount = 20000;
+		int writeCount = 100000;
 		while(writeCount -- >0){
 			Vector<TcpConnection> connections = tcpClients.getConnections();
 			System.out.println("last connection "+connections.size());
@@ -96,6 +96,8 @@ static private IoHandler ioHandler = new IoHandler() {
 				TcpConnection connection = (TcpConnection) connections.get(i);
 				if(time - connection.lastWriteTime> 1000){
 						ByteBuffer byteBuffer = getTestPacket();
+//						byteBuffer.flip();
+//						connection.writeAndFlush(byteBuffer);
 					WriteTask dataTask = new WriteTask();
 					dataTask.connection = connection;
 					byteBuffer.flip();

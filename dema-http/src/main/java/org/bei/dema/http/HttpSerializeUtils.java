@@ -198,7 +198,12 @@ public class HttpSerializeUtils {
                 		if(packet instanceof HttpRequest &&((HttpRequest)packet).host == null){
                 			throw new HttpParseException("");
                 		}
-    	            	packet.parseStage = ParseStage.content;
+                		if(packet.contentLength != 0){
+                			packet.parseStage = ParseStage.content;
+                		}else{
+                			packet.parseStage = ParseStage.complete;
+                		}
+    	            	
                 		break;
                 	}
                 	String head = packet.stringBuffer.toString();
@@ -221,9 +226,9 @@ public class HttpSerializeUtils {
                 }
             } 
 		}
-		if(packet.contentLength == 0){
-			packet.parseStage = ParseStage.complete;
-		}
+//		if(packet.contentLength == 0){
+//			
+//		}
 		// parse content if exist
 		if(byteBuffer.hasRemaining()&&packet.parseStage == ParseStage.content && packet.contentLength != 0){
 			if(byteBuffer.remaining() >= packet.contentLength){

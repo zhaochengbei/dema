@@ -1,8 +1,15 @@
 package org.bei.dema.tcp;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.CancelledKeyException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -20,7 +27,11 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	private ServerSocket accepter;
+	private Selector selector;
+	/**
+	 * 
+	 */
+	private ServerSocketChannel accepter;
 
 	/**
 	 * 
@@ -29,47 +40,68 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	private Runnable acceptSocketLogic = new Runnable() {
-		
-		public void run() {
-			while(true){
-				try {
-					Socket socket = accepter.accept();
-					
-					if(socket != null){
-						TcpConnection connection = new TcpConnection(socket);
-						//if exceed maxConnectionCount 
-						if(maxConnectionCount!=0 && getConnections().size()>= maxConnectionCount){
-							connection.close(TcpConnectionCloseReason.ExceedMaxConnectionCount);
-							continue;
-						}
-						connection.inReading = false;
-						connection.lastReadTime = System.currentTimeMillis();
-						connectionManager.add(connection);
-						
-					}
-				}catch (Exception e) {
-					//open too many file or accepter be close
-					e.printStackTrace();
-					break;
-				}
-			}
-			
-		}
-	};
-
-	/**
-	 * 
-	 */
-	private Thread acceptSocketThread = new Thread(acceptSocketLogic,"AcceptSocket_0");
-	/**
-	 * 
-	 */
 	public int readIdleTimeoutSeconds = 0;
 	/**
 	 * 
 	 */
 	public int readIdleCheckGapSeconds = 1;
+	/**
+	 * 
+	 */
+	private TcpConnectionManager connectionManager = new TcpConnectionManager();
+	/**
+	 * 
+	 */
+	private Runnable acceptAndReadChannelLogic = new Runnable() {
+		
+
+		public void run() {
+			while(true){
+				try {
+					if(selector.select(100) != 0){
+						Iterator<SelectionKey> keyIter = selector.selectedKeys().iterator();  
+				        while (keyIter.hasNext()) {
+				        	SelectionKey key = keyIter.next();
+							try {
+					        	if(key.isAcceptable()){
+				                	SocketChannel channel =  ((ServerSocketChannel) key.channel()).accept();
+//						        	keyIter.remove();
+				                	TcpConnection connection = new TcpConnection(channel);
+									//if exceed maxConnectionCount 
+									if(maxConnectionCount!=0 && getConnections().size()>= maxConnectionCount){
+										connection.close(TcpConnectionCloseReason.ExceedMaxConnectionCount);
+										continue;
+									}
+			
+									connection.inOprating = false;
+									connection.lastReadTime = System.currentTimeMillis();
+									connectionManager.add(connection,selector);
+				                }else{
+						        	//尝试读取
+						        	connectionManager.read(key);
+				                }
+							}catch (CancelledKeyException e) {
+								e.printStackTrace();
+							}
+							keyIter.remove();
+				        }
+			        	//读取处理
+//						keyIter = selector.selectedKeys().iterator();
+//			        	connectionManager.read(keyIter);
+//						continue;
+					}
+					connectionManager.removeClosedConnections();
+				} catch (Exception e) {
+					e.printStackTrace();
+					break;
+				}
+				
+		
+			}
+			
+		}
+	};
+
 	/**
 	 * 
 	 */
@@ -107,20 +139,13 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	private ScheduledExecutorService checkReadIdleTimeOutThreads = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-		
-		public Thread newThread(Runnable r) {
-			return new Thread(r,"CheckReadIdleTimeOut_0");
-		}
-	});
+	private Thread checkReadIdleTimeOutThread = new Thread(checkReadIdleTimeOutLogic,"CheckReadIdleTimeOut_0");
 
 	/**
 	 * 
 	 */
-	/**
-	 * 
-	 */
-	private TcpConnectionManager connectionManager = new TcpConnectionManager();
+	private Thread acceptAndReadChannelThread = new Thread(acceptAndReadChannelLogic,"AcceptAndReadChannel_0");
+
 
 	/**
 	 * 
@@ -134,15 +159,13 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	public void configThread(int checkReadThreadCount,int exeIoTaskThreadCount){
-		connectionManager.checkReadThreadCount = checkReadThreadCount;
+	public void configThread(int exeIoTaskThreadCount){
 		connectionManager.exeIoTaskThreadCount = exeIoTaskThreadCount;
 	}
 	/**
 	 * 
 	 */
-	public void configCheckGap(int readCheckGapMillSeconds,int closeCheckGapMillSeconds,int readIdleCheckGapSeconds){
-		connectionManager.readCheckGapMillSeconds = readCheckGapMillSeconds;
+	public void configCheckGap(int closeCheckGapMillSeconds,int readIdleCheckGapSeconds){
 		connectionManager.closeCheckGapMillSeconds = closeCheckGapMillSeconds;
 		this.readIdleCheckGapSeconds = readIdleCheckGapSeconds;
 	}
@@ -151,9 +174,15 @@ public class TcpServer {
 	 */
 	public void start(int port,IoHandler ioHandler) throws IOException{
 		connectionManager.start(ioHandler);
-		accepter = new ServerSocket(port);
-		acceptSocketThread.start();
-		checkReadIdleTimeOutThreads.execute(checkReadIdleTimeOutLogic);
+		
+		selector = Selector.open();
+		accepter = ServerSocketChannel.open();
+		accepter.configureBlocking(false);
+		accepter.register(selector, SelectionKey.OP_ACCEPT);
+		accepter.bind(new InetSocketAddress(port));
+		
+		acceptAndReadChannelThread.start();
+		checkReadIdleTimeOutThread.start();
 	}
 	/**
 	 * 
@@ -167,8 +196,9 @@ public class TcpServer {
 	 * 
 	 */
 	public void shutdown() throws IOException{
+		selector.close();//accept will auto close;
 		accepter.close();
-		checkReadIdleTimeOutThreads.shutdown();
+		checkReadIdleTimeOutThread.interrupt();
 		connectionManager.shutdown();
 
 	}

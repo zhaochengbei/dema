@@ -1,7 +1,13 @@
 package org.bei.dema.tcp;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -12,11 +18,47 @@ public class TcpClients{
 	/**
 	 * 
 	 */
+	private Selector selector;
+	/**
+	 * 
+	 */
 	private long lastCreateTime;
 	/**
 	 * 
 	 */
 	private TcpConnectionManager connectionManager = new TcpConnectionManager();
+	/**
+	 * 
+	 */
+	/**
+	 * 
+	 */
+	private Runnable readChannelLogic = new Runnable() {
+		
+
+		public void run() {
+			while(true){
+				try {
+					if(selector.select(100) != 0){
+						Iterator<SelectionKey> keyIter = selector.selectedKeys().iterator();
+						while (keyIter.hasNext()) {
+				        	SelectionKey key = keyIter.next();
+				        	connectionManager.read(key);
+						}
+					}
+					connectionManager.removeClosedConnections();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	};
+
+	/**
+	 * 
+	 */
+	private Thread readChannelThread = new Thread(readChannelLogic,"ReadChannel_0");
+
 	/**
 	 * 
 	 */
@@ -34,6 +76,8 @@ public class TcpClients{
 	 */
 	public void start(String ip,int port,int count,int createGap,IoHandler ioHandler)throws IOException{
 		connectionManager.start(ioHandler);
+
+		selector = Selector.open();
 		this.lastCreateTime = System.currentTimeMillis();
 		//generate connection
 		while(count > 0){
@@ -43,11 +87,13 @@ public class TcpClients{
 				/**
 				 * general with nuli threads ,will get connect error and efficiency not up
 				 */
-				Socket socket = new Socket(ip,port);
-				TcpConnection connection = new TcpConnection(socket);
-				connectionManager.add(connection);
+				SocketChannel channel = SocketChannel.open(new InetSocketAddress(ip, port));
+				TcpConnection connection = new TcpConnection(channel);
+				connectionManager.add(connection,selector);
 			}
 		}
+		//启动读取检测线程；
+		readChannelThread.start();
 	}
 	public Vector<TcpConnection> getConnections(){
 		return connectionManager.connections;
@@ -56,17 +102,20 @@ public class TcpClients{
 	/**
 	 * 关闭
 	 */
-	public void shutdown(){
+	public void shutdown() throws IOException{
 		Vector<TcpConnection> connections = getConnections();
-		while(connections.size()>0){
-			try {
-				TcpConnection socket = connections.get(0);
+//		while(connections.size()>0){
+		try {
+			for (int i = 0; i < connections.size(); i++) {
+				TcpConnection socket = connections.get(i);
 				socket.close(TcpConnectionCloseReason.ShutDownTcpServer);
-			} catch (ArrayIndexOutOfBoundsException e) {
-				//do nothing
-			}	
-		}
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			//do nothing
+		}	
+//		}
 		
 		connectionManager.shutdown();
+		readChannelThread.interrupt();
 	}
 }

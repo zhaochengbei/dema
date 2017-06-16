@@ -2,7 +2,12 @@ package org.bei.dema.tcp;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TimerTask;
@@ -25,65 +30,27 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-
-	public int checkReadThreadCount = 1;
 	public int exeIoTaskThreadCount = Runtime.getRuntime().availableProcessors()*5;
 	/**
 	 * 
 	 */
-	public int readCheckGapMillSeconds = 1;
 	public int closeCheckGapMillSeconds = 100;
 	/**
 	 * 
 	 */
 	public Vector<TcpConnection> connections = new Vector<TcpConnection>();
-	/**
-	 * only for checkReadable thread,use different thread ,thread will parallel
-	 */
-	public Vector<Vector<TcpConnection>> connectionGroups = new Vector<Vector<TcpConnection>>();
+
 	/**
 	 * 
 	 */
 	private LinkedBlockingQueue<TcpConnectionManagerTask> tasks = new LinkedBlockingQueue<TcpConnectionManagerTask>();
-	/**
-	 * 
-	 */
-	private ScheduledExecutorService checkSocketCloseThreads = Executors.newScheduledThreadPool(1, new ThreadFactory() {
 		
-		public Thread newThread(Runnable r) {
-			return new Thread(r,"CheckSocketClose_0");
-		}
-	});
+
 	/**
 	 * 
 	 */
-	private ExecutorService checkSocketReadbleThreads;
-	private ThreadFactory checkSocketReadableThreadFactory = new ThreadFactory() {
-		private int index = 0;
-		public Thread newThread(Runnable r) {
-			return new Thread(r,"CheckSocketReadble_"+(index++));
-		}
-	};
+	private IoHandler ioHandler; 
 	
-	
-	/**
-	 * 
-	 */
-	private ScheduledExecutorService distributionTaskThreads= Executors.newScheduledThreadPool(1,new ThreadFactory() {
-		public Thread newThread(Runnable r) {
-			return new Thread(r, "DistributionTask_0");
-		}
-	});
-	/**
-	 * 
-	 */
-	private ExecutorService exeTaskThreads;
-	private ThreadFactory exeTaskThreadFactory = new ThreadFactory() {
-		public int threadIndex = 0;
-		public Thread newThread(Runnable r) {
-			return new Thread(r, "ExeIoTask_" + threadIndex++);
-		}
-	};
 	/**
 	 * 
 	 */
@@ -120,51 +87,34 @@ public class TcpConnectionManager {
 			
 		}
 	};
+	public void removeClosedConnections(){
 
-	/**
-	 * 
-	 */
-	private class CheckSocketReadbleLogic implements Runnable {
-		/**
-		 * 
-		 */
-		private Vector<TcpConnection> connectionGroup;
-		/**
-		 * 
-		 */
-		public void run() {
-			while(true){
-				try {
-					for (int i = 0; i < connectionGroup.size(); i++) {
-						TcpConnection connection = connectionGroup.get(i);
-						//check connection is not can be read
-						/**
-						 * thread safe explain:
-						 * after a thread nodify,another thread don't know in immediately,there has a time gap between happy and to know; 
-						 */
-						if(connection.inReading == false&&connection.available()>0){
-							connection.inReading = true;
-							TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.READ, connection, ioHandler);
-					    	tasks.add(tcpTask);
-						}
-					}
-				
-				}catch (ArrayIndexOutOfBoundsException e) {
-//					e.printStackTrace();
-					//do nothing
-				}catch (Exception e) {
-					e.printStackTrace();
-				}
-				try {
-					Thread.sleep(readCheckGapMillSeconds);
-				} catch (InterruptedException e) {
-					break;
-//					e.printStackTrace();
+		try {
+			for (int i = 0; i < connections.size(); i++) {
+				TcpConnection connection = connections.get(i);
+				//check connection is  not close
+				if(connection.isClose() == true){
+					remove(connection);
+					i--;
+					TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.CLOSE, connection, ioHandler);
+					tasks.add(tcpTask);
+					continue;
 				}
 			}
+		}catch (ArrayIndexOutOfBoundsException e ) {
+			//can not reach here
+//			e.printStackTrace();
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
-	};
-	private Vector<CheckSocketReadbleLogic> checkSocketReadbleLogics = new Vector<CheckSocketReadbleLogic>();
+//		try {
+//			Thread.sleep(closeCheckGapMillSeconds);
+//		} catch (InterruptedException e) {
+////			break;
+////			e.printStackTrace();
+//		}
+	}
+
 	/**
 	 * 
 	 */
@@ -173,11 +123,18 @@ public class TcpConnectionManager {
 		public void run() {
 			while(true){
 				try {
+					ArrayList<TcpConnectionManagerTask> needWaitTasks = new ArrayList<TcpConnectionManagerTask>();
 					while(tasks.size()>0){
 						//only here take task ,so never block;
 						TcpConnectionManagerTask task = tasks.take();
-						exeTaskThreads.execute(task);
+						if(task.connection.inOprating == true){
+							needWaitTasks.add(task);
+						}else{
+							task.connection.inOprating = true;
+							exeTaskThreads.execute(task);
+						}
 					}
+					tasks.addAll(needWaitTasks);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -186,7 +143,6 @@ public class TcpConnectionManager {
 				} catch (InterruptedException e) {
 					break;
 //					e.printStackTrace();
-
 				}
 			}
 			
@@ -195,7 +151,22 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	private IoHandler ioHandler; 
+	private Thread checkSocketCloseThread = new Thread(checkSocketCloseLogic,"CheckChannelClose_0");
+	
+	/**
+	 * 
+	 */
+	private Thread distributionTaskThread = new Thread(distributionTaskLogic,"DistributionTask_0");
+	/**
+	 * 
+	 */
+	private ExecutorService exeTaskThreads;
+	private ThreadFactory exeTaskThreadFactory = new ThreadFactory() {
+		public int threadIndex = 0;
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "ExeIoTask_" + threadIndex++);
+		}
+	};
 	/**
 	 * 
 	 */
@@ -208,26 +179,16 @@ public class TcpConnectionManager {
 	 * @param ioHandler
 	 * @throws Exception
 	 */
-	protected void start(IoHandler ioHandler) {
+	protected void start(IoHandler ioHandler) throws IOException{
 		this.ioHandler = ioHandler;
-		// init container
-		for (int i = 0; i < checkReadThreadCount; i++) {
-			Vector<TcpConnection> connectionGroup = new Vector<TcpConnection>();
-			connectionGroups.add(connectionGroup);
-			CheckSocketReadbleLogic checkSocketReadbleLogic = new CheckSocketReadbleLogic();
-			checkSocketReadbleLogic.connectionGroup = connectionGroup;
-			checkSocketReadbleLogics.add(checkSocketReadbleLogic);
-		}
-		//init thread
-		checkSocketReadbleThreads = Executors.newScheduledThreadPool(checkReadThreadCount, checkSocketReadableThreadFactory);
+		
+		//init thread pool;
 		exeTaskThreads = Executors.newFixedThreadPool(exeIoTaskThreadCount, exeTaskThreadFactory);
 		
 		//start thread
-		checkSocketCloseThreads.execute(checkSocketCloseLogic);
-		for (int i = 0; i < checkReadThreadCount; i++) {
-			checkSocketReadbleThreads.execute(checkSocketReadbleLogics.get(i));
-		}
-		distributionTaskThreads.execute(distributionTaskLogic);
+//		checkSocketCloseThread.start();
+		
+		distributionTaskThread.start();
 	}
 	
 	
@@ -235,11 +196,10 @@ public class TcpConnectionManager {
 	 * 
 	 * @throws Exception
 	 */
-	public void shutdown(){
+	public void shutdown() throws IOException{
 		//stop all thread
-		checkSocketCloseThreads.shutdown();
-		checkSocketReadbleThreads.shutdown();
-		distributionTaskThreads.shutdown();
+//		checkSocketCloseThread.interrupt();
+		distributionTaskThread.interrupt();
 		while(true){
 			//keep started task normal complete
 			if(((ThreadPoolExecutor)exeTaskThreads).getActiveCount()==0){
@@ -249,22 +209,17 @@ public class TcpConnectionManager {
 		}
 		//clear connection and task;
 		connections.clear();
-		connectionGroups.clear();
-		checkSocketReadbleLogics.clear();
 		tasks.clear();
 	}
 	/**
 	 * 
 	 */
-	public void add(TcpConnection connection){
+	public void add(TcpConnection connection,Selector selector) throws IOException{
+		connection.channel.configureBlocking(false);
+		connection.selectionKey = connection.channel.register(selector, SelectionKey.OP_READ);
+		connection.selectionKey.attach(connection);
+		
 		connections.add(connection);
-		Vector<TcpConnection> connectionGroup = null;
-		for (int i = 0; i < connectionGroups.size(); i++) {
-			if(connectionGroup == null||connectionGroups.get(i).size()<connectionGroup.size()){
-				connectionGroup = connectionGroups.get(i);
-			}
-		}
-		connectionGroup.add(connection);
 		TcpConnectionManagerTask task = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.ACCEPT, connection, ioHandler);
 		tasks.add(task);
 	}
@@ -272,13 +227,40 @@ public class TcpConnectionManager {
 	 * 
 	 */
 	private void remove(TcpConnection connection){
+		connection.selectionKey.cancel();
 		connections.remove(connection);
-//		Vector<TcpConnection> connectionGroup = null;
-		for (int i = 0; i < connectionGroups.size(); i++) {
-			if(connectionGroups.get(i).contains(connection)){
-				connectionGroups.get(i).remove(connection);
-				break;
-			}
-		}
+	}
+	public void read(SelectionKey key){  
+
+//        while (keyIter.hasNext()) { 
+//        	SelectionKey key = keyIter.next();
+    		TcpConnection connection = (TcpConnection)key.attachment();
+//        	try {
+        		if(key.isReadable()){
+//                    if (connection.inOprating == false) {// 判断是否有数据发送过来
+//    					connection.inOprating = true;
+//                    	connection.byteBuffer.clear();
+//                    	long byteRead = connection.channel.read(connection.byteBuffer);
+//                    	connection.byteBuffer.flip();
+    				long byteRead = connection.readToBuffer();
+//    				System.out.println("receive a data");
+                	if(byteRead == -1){
+                		connection.close(TcpConnectionCloseReason.ReadError);
+                	}else if(byteRead == 0){
+//                		connection.close(TcpConnectionCloseReason.ReadError);
+//                		continue;
+                	}else{
+						TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.READ, connection, ioHandler);
+				    	tasks.add(tcpTask);
+                	}
+//                    }
+                 
+    			}	
+//			} catch (Exception e) {
+//				connection.close(TcpConnectionCloseReason.ReadError);
+////				e.printStackTrace();
+//			}
+//        	keyIter.remove();
+//        }
 	}
 }
