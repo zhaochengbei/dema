@@ -134,16 +134,14 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	public void configThread(int checkReadThreadCount,int exeIoTaskThreadCount){
-		connectionManager.checkReadThreadCount = checkReadThreadCount;
+	public void configThread(int exeIoTaskThreadCount){
 		connectionManager.exeIoTaskThreadCount = exeIoTaskThreadCount;
 	}
 	/**
 	 * 
 	 */
-	public void configCheckGap(int readCheckGapMillSeconds,int closeCheckGapMillSeconds,int readIdleCheckGapSeconds){
-		connectionManager.readCheckGapMillSeconds = readCheckGapMillSeconds;
-		connectionManager.closeCheckGapMillSeconds = closeCheckGapMillSeconds;
+	public void configCheckGap(int checkStatusGapMillSeconds,int readIdleCheckGapSeconds){
+		connectionManager.checkStatusGapMillSeconds = checkStatusGapMillSeconds;
 		this.readIdleCheckGapSeconds = readIdleCheckGapSeconds;
 	}
 	/**

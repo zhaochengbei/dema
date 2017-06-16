@@ -30,23 +30,28 @@ public class TcpConnectionManagerTask implements Runnable {
 	 * 
 	 */
 	public void run() {
-		switch(type){
-		case TcpConnectionManagerTaskType.ACCEPT:
-			ioHandler.onAccept(this.connection);
-			break;
-		case TcpConnectionManagerTaskType.READ:
-			ioHandler.onRead(this.connection);
-			break;
-		case TcpConnectionManagerTaskType.CLOSE:
-			ioHandler.onClose(this.connection,this.connection.closeReason);
-			break;
-		default:
-			break;		
-		}	
-		//mark not in reading status
-		if(type == TcpConnectionManagerTaskType.READ){
-			connection.inReading = false;
+		try {
+			switch(type){
+			case TcpConnectionManagerTaskType.ACCEPT:
+				ioHandler.onAccept(this.connection);
+				break;
+			case TcpConnectionManagerTaskType.READ:
+				ioHandler.onRead(this.connection);
+				break;
+			case TcpConnectionManagerTaskType.CLOSE:
+				ioHandler.onClose(this.connection,this.connection.closeReason);
+				break;
+			default:
+				break;		
+			}	
+			//mark not in reading status
+			if(type == TcpConnectionManagerTaskType.READ){
+				connection.inReading = false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		
 		
 	}
 	

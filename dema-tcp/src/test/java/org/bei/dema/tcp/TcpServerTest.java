@@ -27,12 +27,7 @@ public class TcpServerTest
 	static private IoHandler ioHandler = new IoHandler() {
 		
 		public void onAccept(TcpConnection connection){
-//			try {
-				System.out.println("s_onAccept,"+connection.socket);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-			
+			System.out.println("s_onAccept,"+connection.socket);
 		}
 		
 		public void onRead(TcpConnection connection){
@@ -68,8 +63,7 @@ public class TcpServerTest
     {
     	try {
     		tcpServer = new TcpServer();
-    		tcpServer.config(100000,1);
-    		tcpServer.configCheckGap(1, 100, 15);
+    		tcpServer.config(100000,12);
     		tcpServer.start(9090, ioHandler);
 
             System.out.println( "Hello World!" );

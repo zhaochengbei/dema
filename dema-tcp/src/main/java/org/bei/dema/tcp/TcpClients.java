@@ -25,6 +25,13 @@ public class TcpClients{
 	}
 	/**
 	 * 
+	 * @return
+	 */
+	public Vector<TcpConnection> getConnections(){
+		return connectionManager.connections;
+	}
+	/**
+	 * 
 	 * @param ip
 	 * @param port
 	 * @param count
@@ -49,16 +56,13 @@ public class TcpClients{
 			}
 		}
 	}
-	public Vector<TcpConnection> getConnections(){
-		return connectionManager.connections;
-	}
 	
 	/**
 	 * 关闭
 	 */
 	public void shutdown(){
 		Vector<TcpConnection> connections = getConnections();
-		while(connections.size()>0){
+		for (int i = 0; i < connections.size(); i++) {
 			try {
 				TcpConnection socket = connections.get(0);
 				socket.close(TcpConnectionCloseReason.ShutDownTcpServer);
