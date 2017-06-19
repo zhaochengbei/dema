@@ -52,7 +52,7 @@ public class TcpConnection {
 	 * 
 	 * @param host
 	 * @param port
-	 * @throws Exception
+	 * @throws IOException
 	 */
 	public void connect(String host,int port) throws IOException{
 		socket.connect(new InetSocketAddress(host, port));
@@ -69,7 +69,6 @@ public class TcpConnection {
 	/**
 	 * 
 	 * @param byteBuffer
-	 * @throws Exception
 	 */
 	public void writeAndFlush(ByteBuffer byteBuffer){
 //		byteBuffer.flip();
@@ -86,7 +85,6 @@ public class TcpConnection {
 	/**
 	 * 
 	 * @return
-	 * @throws Exception
 	 */
 	public int available(){
 		int available = 0;
@@ -100,7 +98,6 @@ public class TcpConnection {
 	/**
 	 * 
 	 * @param byteBuffer
-	 * @throws Exception
 	 */
 	public void read(ByteBuffer byteBuffer){
 		try {
@@ -120,7 +117,7 @@ public class TcpConnection {
 	}
 	/**
 	 * 
-	 * @throws Exception
+	 * @param reason
 	 */
 	public void close(String reason){
 		if(socket.isClosed() == true){

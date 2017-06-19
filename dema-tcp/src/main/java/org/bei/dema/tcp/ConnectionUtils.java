@@ -11,13 +11,13 @@ public class ConnectionUtils {
 	/**
 	 * the length is length of packet,if not you can use lengthAdjustment adjust;
 	 * 
-	 * @param connection
-	 * @param lengthFieldOffset
+	 * @param connection 
+	 * @param lengthFieldOffset 
 	 * @param lengthOfLength ,can be 1,2,4; 
-	 * @param lengthAdjustment
-	 * @param maxFrameLength
+	 * @param lengthAdjustment 
+	 * @param maxFrameLength 
 	 * @return next packet from connection
-	 * @throws Exception
+	 * @throws TcpException 
 	 */
 	static public ByteBuffer readPacket(TcpConnection connection,int lengthFieldOffset,int lengthOfLength,int lengthAdjustment,int maxFrameLength) throws TcpException{
 		//if length has not read ,value of packetlength is -1;

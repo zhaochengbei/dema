@@ -14,6 +14,12 @@ import java.nio.ByteBuffer;
 public class TcpUtils {
 	/**
 	 * the head of packet is a int,is the value of packet,the length not incloud itself length
+	 * @param host
+	 * @param port
+	 * @param requestData
+	 * @param timeout
+	 * @return
+	 * @throws IOException
 	 */
 	static public ByteBuffer request(String host,int port,ByteBuffer requestData,int timeout)throws IOException{
 		//connect

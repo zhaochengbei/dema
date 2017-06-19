@@ -35,9 +35,9 @@ public class TcpClients{
 	 * @param ip
 	 * @param port
 	 * @param count
-	 * @param createGap gap of create connection
+	 * @param createGap
 	 * @param ioHandler
-	 * @throws Exception
+	 * @throws IOException
 	 */
 	public void start(String ip,int port,int count,int createGap,IoHandler ioHandler)throws IOException{
 		connectionManager.start(ioHandler);

@@ -4,7 +4,7 @@
 
   <groupId>io.github.zhaochengbei</groupId>
   <artifactId>dema</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>pom</packaging>
 
   <name>dema</name>

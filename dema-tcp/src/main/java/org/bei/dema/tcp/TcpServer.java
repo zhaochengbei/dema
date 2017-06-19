@@ -124,7 +124,7 @@ public class TcpServer {
 
 	/**
 	 * 
-	 * @param maxConnection
+	 * @param maxConnectionCount
 	 * @param readIdleTimeoutSeconds ,timeunit is millsecond
 	 */
 	public void config(int maxConnectionCount,int readIdleTimeoutSeconds){

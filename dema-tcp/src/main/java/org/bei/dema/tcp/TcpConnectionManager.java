@@ -148,7 +148,6 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 * @param ioHandler
-	 * @throws Exception
 	 */
 	protected void start(IoHandler ioHandler) {
 		this.ioHandler = ioHandler;
@@ -163,7 +162,6 @@ public class TcpConnectionManager {
 	
 	/**
 	 * 
-	 * @throws Exception
 	 */
 	public void shutdown(){
 		//stop all thread
