@@ -15,6 +15,10 @@ public class HttpResponse extends HttpPacket {
 	 *  phrase sever response maybe we do not define;
 	 */
 	public String phrase;
+	/**
+	 * 
+	 */
+	public String server = "dema-http/1.0";
 	
 	/**
 	 * 

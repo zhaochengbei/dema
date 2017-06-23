@@ -11,4 +11,6 @@ public class TcpConnectionCloseReason {
 	static public final String ReadIdleTimeOut ="ReadIdleTimeOut";
 	static public final String ShutDownTcpServer ="ShutDownTcpServer";
 	static public final String OtherError ="OtherError";
+	static public final String NormalActiveClose ="NormalActive";
+	
 }

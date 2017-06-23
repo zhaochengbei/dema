@@ -12,8 +12,7 @@ import org.bei.dema.http.HttpParseException;
 public class HttpSerializeUtils {
 
 	/**
-	 * byte要进行整合计算就会设计ByteBuffer；
-	 * nio使用byteBuffer，我们沿用了；
+	 * 
 	 */
 	static public ByteBuffer serialize(HttpRequest request){
 		// write request line
@@ -65,7 +64,9 @@ public class HttpSerializeUtils {
 		stringBuffer.append(response.phrase);
 		stringBuffer.append("\n");
 		//write head
-		stringBuffer.append("Server: dema-http/1.0\n");
+		stringBuffer.append("Server: ");
+		stringBuffer.append(response.server);
+		stringBuffer.append("\n");
 		stringBuffer.append("Date: ");
 		stringBuffer.append((new Date()).toString());
 		stringBuffer.append("\n");
@@ -82,11 +83,20 @@ public class HttpSerializeUtils {
 		stringBuffer.append("Cache-control: no-cache\n");
 		stringBuffer.append("Connection: ");
 		stringBuffer.append(response.connection);
-		stringBuffer.append("\n\n");
+		stringBuffer.append("\n");
+		//write other head
+		for (String key : response.otherHead.keySet()) {
+			String value = response.otherHead.get(key);
+			stringBuffer.append(key);
+			stringBuffer.append(": ");
+			stringBuffer.append(value);
+			stringBuffer.append("\n");
+		}
+		stringBuffer.append("\n");
 		//general bytes for write
 		byte[] bytes = stringBuffer.toString().getBytes();
 		ByteBuffer byteBuffer;
-		if(response.sendContent){
+		if(response.content !=null&&response.sendContent){
 			byteBuffer = ByteBuffer.allocate(bytes.length+response.content.length);
 			byteBuffer.put(bytes);
 			byteBuffer.put(response.content);
@@ -100,17 +110,15 @@ public class HttpSerializeUtils {
 	 * 
 	 */
 	static public HttpRequest deSerialize(ByteBuffer byteBuffer,HttpRequest request)throws HttpParseException{
-		//读出新到的数据 
-//		byteBuffer.flip();
 		// parse request line
 		if(byteBuffer.hasRemaining() && request.parseStage == ParseStage.line){
-			//逐个字节读取，写入缓冲，如果发现结束符，解析请求行；
+			//read byte write buff until find complete sign,parse request line
 			while(byteBuffer.hasRemaining()){
                 int c=byteBuffer.get();  
                 if (c=='\t'||c=='\n'||c==-1) {
-                	//去掉window的换行符；
+                	//clean window line complete sign if exist
                 	clearCRLF(request.stringBuffer);
-                	//解析
+                	//parse request line;
                 	String[] lineElements = request.stringBuffer.toString().split(" ");
                 	if(lineElements.length !=3){
                 		throw new HttpParseException("");
@@ -146,22 +154,23 @@ public class HttpSerializeUtils {
 		}
 	}
 	/**
-	 * 解析发生错误，抛出异常;
-	 * 解析未完成，返回null;
-	 * 解析完成，返回HttpResponse;
 	 * 
+	 * @param byteBuffer
+	 * @param response
+	 * @return if parse complete return bytebuffer,else return null;
+	 * @throws HttpParseException
 	 */
 	static public HttpResponse deSerialize(ByteBuffer byteBuffer,HttpResponse response)throws HttpParseException{
 		// parse request line
 		boolean b = byteBuffer.hasRemaining();
 		if(byteBuffer.hasRemaining() && response.parseStage == ParseStage.line){
-			//逐个字节读取，写入缓冲，如果发现结束符，解析请求行；
+			//read byte write buff until find complete sign,parse request line
 			while(byteBuffer.hasRemaining()){
 		    	int c=byteBuffer.get();  
 		        if (c=='\t'||c=='\n'||c==-1) {
-			        //去掉window的换行符；
+                	//clean window line complete sign if exist
 			        clearCRLF(response.stringBuffer);
-			        //解析
+			        //parse line
 			        String responseLine = response.stringBuffer.toString();
 			        String[] lineElements = responseLine.split(" ");
 			        response.version = lineElements[0];
@@ -192,7 +201,7 @@ public class HttpSerializeUtils {
 			while(byteBuffer.hasRemaining()){
                 int c=byteBuffer.get();  
                 if (c=='\t'||c=='\n'||c==-1) {  
-                	//如果 stringbuffer是空的；
+                	//clean window line complete sign if exist
                 	clearCRLF(packet.stringBuffer);
                 	if(packet.stringBuffer.length() == 0){
                 		if(packet instanceof HttpRequest &&((HttpRequest)packet).host == null){
@@ -234,8 +243,7 @@ public class HttpSerializeUtils {
 			}
 		}
 		
-		
-		//判断是否解析完成
+		// if parse complete
 		if(packet.parseStage == ParseStage.complete){
 			return packet;
 		}

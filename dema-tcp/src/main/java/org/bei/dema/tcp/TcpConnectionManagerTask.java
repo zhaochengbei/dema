@@ -43,16 +43,15 @@ public class TcpConnectionManagerTask implements Runnable {
 				break;
 			default:
 				break;		
-			}	
-			//mark not in reading status
-			if(type == TcpConnectionManagerTaskType.READ){
-				connection.inReading = false;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
+		//mark not in reading status
+		if(type == TcpConnectionManagerTaskType.READ){
+			connection.inReading = false;
+		}
+		connection.inOperating = false;
 	}
 	
 }

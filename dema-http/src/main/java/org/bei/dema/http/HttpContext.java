@@ -27,7 +27,7 @@ public class HttpContext {
 	public void write(HttpResponse response){
 		//
 		this.response = response;
-		HttpConnectionUtils.writeHttpResponse(connection, response,request);
+		HttpConnectionUtils.writeHttpResponse(connection, response);
 	}
 	/**
 	 * 

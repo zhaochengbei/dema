@@ -25,12 +25,12 @@ public class HttpServer {
 	private IoHandler ioHandler = new IoHandler() {
 		
 		public void onRead(TcpConnection connection){
-			//创建请求对象；
+			//create packet if not create before
 			if(connection.packet == null){
 				connection.packet = new HttpRequest();
 			}
 			HttpRequest request = (HttpRequest)connection.packet;
-			//读出新到的数据 
+			//read all data from connection 
 			ByteBuffer byteBuffer = ByteBuffer.allocate(connection.available());
 			connection.read(byteBuffer);
 			byteBuffer.flip();
@@ -41,6 +41,7 @@ public class HttpServer {
 					context.connection = connection;
 					context.request = request;
 					httpHandler.onHttpRequest(request, context);
+					connection.packet = null;
 				}
 			} catch (HttpParseException e) {
 				e.printStackTrace();
@@ -53,7 +54,7 @@ public class HttpServer {
     		response.status = HttpResponseStatus.BAD_REQUEST;
     		response.phrase = HttpResponseStatusPhrase.map.get(response.status);
     		response.content = ("errorcode="+response.phrase).getBytes();
-    		HttpConnectionUtils.writeHttpResponse(connection, response,null);
+    		HttpConnectionUtils.writeHttpResponse(connection, response);
     		connection.close(response.phrase);
 		}
 		
@@ -82,7 +83,6 @@ public class HttpServer {
 	 */
 	public void start(int port,HttpHandler httpHandler) throws IOException{
 		this.httpHandler = httpHandler;
-//		tcpServer.configCheckGap(10, 10, 1);
 		tcpServer.start(port, ioHandler);
 	}
 	/**

@@ -15,11 +15,14 @@ public class TcpConnection {
 	 * 
 	 */
 	public Socket socket;
-	
+	/**
+	 * 
+	 */
+	public boolean inReading;
 	/**
 	 * this lib use
 	 */
-	public boolean inReading;
+	public boolean inOperating;
 	
 	/**
 	 * 

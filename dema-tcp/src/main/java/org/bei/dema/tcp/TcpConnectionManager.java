@@ -63,8 +63,7 @@ public class TcpConnectionManager {
 						 */
 						if(connection.inReading == false&&connection.available()>0){
 							connection.inReading = true;
-							TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.READ, connection, ioHandler);
-					    	tasks.add(tcpTask);
+							addTask(TcpConnectionManagerTaskType.READ, connection);
 						}
 					}
 				
@@ -95,9 +94,10 @@ public class TcpConnectionManager {
 					while(tasks.size()>0){
 						//only here take task ,so never block;
 						TcpConnectionManagerTask task = tasks.take();
-						if(task.type == TcpConnectionManagerTaskType.CLOSE&&task.connection.inReading == true){
+						if(task.connection.inOperating == true){
 							processNextLoop.add(task);
 						}else{
+							task.connection.inOperating = true;
 							exeTaskThreads.execute(task);
 						}
 					}
@@ -182,16 +182,21 @@ public class TcpConnectionManager {
 	 * 
 	 */
 	public void add(TcpConnection connection){
+		addTask(TcpConnectionManagerTaskType.ACCEPT, connection);
 		connections.add(connection);
-		TcpConnectionManagerTask task = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.ACCEPT, connection, ioHandler);
-		tasks.add(task);
 	}
 	/**
 	 * 
 	 */
 	private void remove(TcpConnection connection){
 		connections.remove(connection);
-		TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(TcpConnectionManagerTaskType.CLOSE, connection, ioHandler);
+		addTask(TcpConnectionManagerTaskType.CLOSE, connection);
+	}
+	/**
+	 * 
+	 */
+	private void addTask(int type,TcpConnection connection){
+		TcpConnectionManagerTask tcpTask = new TcpConnectionManagerTask(type, connection, ioHandler);
 		tasks.add(tcpTask);
 	}
 }

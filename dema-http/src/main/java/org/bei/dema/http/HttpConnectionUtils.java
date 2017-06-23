@@ -12,7 +12,7 @@ public class HttpConnectionUtils {
 	/**
 	 * 
 	 */
-	static public void writeHttpResponse(TcpConnection connection, HttpResponse response,HttpRequest request){
+	static public void writeHttpResponse(TcpConnection connection, HttpResponse response){
 		ByteBuffer byteBuffer = HttpSerializeUtils.serialize(response);
 		byteBuffer.flip();
 		connection.writeAndFlush(byteBuffer);

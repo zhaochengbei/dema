@@ -30,7 +30,7 @@ public class HttpPacket {
 	/**
 	 * 
 	 */
-	public Map<String, Object> otherHead = new HashMap<String, Object>();
+	public Map<String, String> otherHead = new HashMap<String, String>();
 	
 	/**
 	 * 
