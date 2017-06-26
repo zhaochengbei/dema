@@ -15,29 +15,23 @@ public class HttpContext {
 	public TcpConnection connection;
 	/**
 	 * 
+	 * @param request
 	 */
-	public HttpRequest request;
+	public void write(HttpRequest request){
+		HttpConnectionUtils.writeHttpRequest(connection, request);
+	}
 	/**
 	 * 
-	 */
-	private HttpResponse response;
-	/**
-	 * 
+	 * @param response
 	 */
 	public void write(HttpResponse response){
-		//
-		this.response = response;
 		HttpConnectionUtils.writeHttpResponse(connection, response);
 	}
 	/**
 	 * 
+	 * @param closeReason
 	 */
-	public void close() {
-		if(response != null){
-			connection.close(response.phrase);
-		}else{
-			connection.close(HttpResponseStatusPhrase.map.get(HttpResponseStatus.INTERNAL_SERVER_ERROR));
-		}
-		
+	public void close(String closeReason) {
+		connection.close(closeReason);
 	}
 }

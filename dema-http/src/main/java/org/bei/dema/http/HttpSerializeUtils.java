@@ -13,6 +13,8 @@ public class HttpSerializeUtils {
 
 	/**
 	 * 
+	 * @param request
+	 * @return
 	 */
 	static public ByteBuffer serialize(HttpRequest request){
 		// write request line
@@ -34,6 +36,14 @@ public class HttpSerializeUtils {
 		if(request.content != null){
 			stringBuffer.append("Content-Length: ");
 			stringBuffer.append(request.content.length);
+			stringBuffer.append("\n");
+		}
+		//write other head
+		for (String key : request.otherHead.keySet()) {
+			String value = request.otherHead.get(key);
+			stringBuffer.append(key);
+			stringBuffer.append(": ");
+			stringBuffer.append(value);
 			stringBuffer.append("\n");
 		}
 		stringBuffer.append("\n");
@@ -59,7 +69,7 @@ public class HttpSerializeUtils {
 		stringBuffer.append(response.status);
 		stringBuffer.append(" ");
 		if(response.phrase == null){
-			response.phrase = HttpResponseStatusPhrase.map.get(response.status);
+			response.phrase = HttpResponseStatus.phraseMap.get(response.status);
 		}
 		stringBuffer.append(response.phrase);
 		stringBuffer.append("\n");
@@ -230,11 +240,11 @@ public class HttpSerializeUtils {
                 }
             } 
 		}
-		if(packet.contentLength == 0){
+		if(packet.parseStage == ParseStage.content&&packet.contentLength == 0){
 			packet.parseStage = ParseStage.complete;
 		}
 		// parse content if exist
-		if(byteBuffer.hasRemaining()&&packet.parseStage == ParseStage.content && packet.contentLength != 0){
+		if(packet.parseStage == ParseStage.content && packet.contentLength != 0){
 			if(byteBuffer.remaining() >= packet.contentLength){
 				byte[] bytes = new byte[packet.contentLength];
 				byteBuffer.get(bytes);

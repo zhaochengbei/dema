@@ -1,20 +1,16 @@
 package org.bei.dema.websocket;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bei.dema.http.HttpConnectionUtils;
-import org.bei.dema.http.HttpContext;
-import org.bei.dema.http.HttpHandler;
 import org.bei.dema.http.HttpParseException;
 import org.bei.dema.http.HttpRequest;
 import org.bei.dema.http.HttpResponse;
 import org.bei.dema.http.HttpResponseStatus;
-import org.bei.dema.http.HttpResponseStatusPhrase;
 import org.bei.dema.http.HttpSerializeUtils;
 import org.bei.dema.tcp.IoHandler;
 import org.bei.dema.tcp.TcpConnection;
@@ -71,15 +67,7 @@ public class WebSocketServer {
 						byte[] bytes = HexUtils.hexStringToBytes(secWebSocketAccept);
 						secWebSocketAccept = new String(Base64.getEncoder().encode(bytes));
 						//general response
-						HttpResponse httpResponse = new HttpResponse();
-						httpResponse.status = 101;
-						httpResponse.phrase = "Switching Protocols";
-						httpResponse.connection = "Upgrade";
-						httpResponse.server = "dema websocket server";
-						httpResponse.otherHead.put("Upgrade", "WebSocket");
-						httpResponse.otherHead.put("Access-Control-Allow-Credentials", "true");
-						httpResponse.otherHead.put("Access-Control-Allow-Headers", "content-type");
-						httpResponse.otherHead.put("Sec-WebSocket-Accept", secWebSocketAccept);
+						HttpResponse httpResponse = WebSocketHandShakePacketBuilder.createHandShakeResponse(secWebSocketAccept);
 						webSocketConnection.hasHandShake = true;
 						connection.packet = null;
 						webSocketHandler.onUpgrade(request2, httpResponse, webSocketConnection);
@@ -90,19 +78,20 @@ public class WebSocketServer {
 					sendErrorAndCloseConnection(connection, HttpResponseStatus.BAD_REQUEST);
 				}
 			}else{
-				//create frame obj
-				if(connection.packet == null){
-					connection.packet = new WebSocketFrame();
+				while(connection.available()>0){
+					//create frame obj
+					if(connection.packet == null){
+						connection.packet = new WebSocketFrame();
+					}
+					//try parse
+					WebSocketFrame packet = (WebSocketFrame)connection.packet;
+					WebSocketFrame packet2 = WebSocketSerializeUtils.deSerialize(packet, connection);
+					if(packet2 == null){
+						return;
+					}
+					connection.packet = null;
+					webSocketHandler.onFrame(webSocketConnection,packet2);
 				}
-				//try parse
-				WebSocketFrame packet = (WebSocketFrame)connection.packet;
-				WebSocketFrame packet2 = WebSocketSerializeUtils.deSerialize(packet, connection);
-				if(packet2 == null){
-					return;
-				}
-				connection.packet = null;
-				webSocketHandler.onFrame(webSocketConnection,packet2);
-				
 			}
 		}
 		
@@ -128,7 +117,7 @@ public class WebSocketServer {
 	private void sendErrorAndCloseConnection(TcpConnection connection,int responseStatus){
 		HttpResponse response = new HttpResponse();
 		response.status = HttpResponseStatus.BAD_REQUEST;
-		response.phrase = HttpResponseStatusPhrase.map.get(response.status);
+		response.phrase = HttpResponseStatus.phraseMap.get(response.status);
 		response.content = ("errorcode="+response.phrase).getBytes();
 		HttpConnectionUtils.writeHttpResponse(connection, response);
 		connection.close(response.phrase);

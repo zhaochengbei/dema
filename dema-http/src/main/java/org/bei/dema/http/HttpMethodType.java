@@ -8,4 +8,5 @@ public class HttpMethodType {
 	static public String GET = "GET";
 	static public String HEAD = "HEAD";
 	static public String POST = "POST";
+	
 }

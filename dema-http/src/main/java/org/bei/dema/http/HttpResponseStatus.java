@@ -20,4 +20,13 @@ public class HttpResponseStatus {
 	 * 
 	 */
 	static public int INTERNAL_SERVER_ERROR = 500;
+	/**
+	 * 
+	 */	static public Map<Integer, String> phraseMap = new HashMap<Integer, String>(){
+		{
+			put(200,"OK");
+			put(400,"Bad Request");
+			put(500,"Internal Server Error");
+		}
+	};
 }

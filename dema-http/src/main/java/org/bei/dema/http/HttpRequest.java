@@ -1,9 +1,5 @@
 package org.bei.dema.http;
 
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * author：zhaochengbei
  * date：2017/6/7

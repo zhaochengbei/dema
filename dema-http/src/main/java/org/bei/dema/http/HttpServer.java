@@ -2,6 +2,8 @@ package org.bei.dema.http;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.print.DocFlavor.READER;
 
@@ -22,6 +24,10 @@ public class HttpServer {
 	/**
 	 * 
 	 */
+	private Map<TcpConnection, HttpContext> httpContexts = new ConcurrentHashMap<TcpConnection, HttpContext>();
+	/**
+	 * 
+	 */
 	private IoHandler ioHandler = new IoHandler() {
 		
 		public void onRead(TcpConnection connection){
@@ -37,9 +43,7 @@ public class HttpServer {
 			try {
 				HttpRequest request2 = HttpSerializeUtils.deSerialize(byteBuffer, request);				//判断是否解析完成
 				if(request2 != null){
-					HttpContext context = new HttpContext();
-					context.connection = connection;
-					context.request = request;
+					HttpContext context = httpContexts.get(connection);
 					httpHandler.onHttpRequest(request, context);
 					connection.packet = null;
 				}
@@ -52,20 +56,23 @@ public class HttpServer {
 		private void sendErrorAndCloseConnection(TcpConnection connection,int responseStatus){
     		HttpResponse response = new HttpResponse();
     		response.status = HttpResponseStatus.BAD_REQUEST;
-    		response.phrase = HttpResponseStatusPhrase.map.get(response.status);
+    		response.phrase = HttpResponseStatus.phraseMap.get(response.status);
     		response.content = ("errorcode="+response.phrase).getBytes();
     		HttpConnectionUtils.writeHttpResponse(connection, response);
     		connection.close(response.phrase);
 		}
-		
-		public void onClose(TcpConnection connection, String reason){
-			//do nothing;
-			
-		}
-		
+
 		public void onAccept(TcpConnection connection){
-			//do nothing
+			HttpContext context = new HttpContext();
+			context.connection = connection;
+			httpContexts.put(connection, context);
+			httpHandler.onAccept(context);
 		}
+		public void onClose(TcpConnection connection, String reason){
+			HttpContext context = httpContexts.remove(connection);
+			httpHandler.onClose(context,reason);
+		}
+		
 	};
 	/**
 	 * 
@@ -73,6 +80,9 @@ public class HttpServer {
 	private HttpHandler httpHandler;
 	/**
 	 * 
+	 * @param maxConnectionCount
+	 * @param readIdleTimeoutSeconds
+	 * @throws IOException
 	 */
 	public void config(int maxConnectionCount,int readIdleTimeoutSeconds) throws IOException{
 		tcpServer.config(maxConnectionCount, readIdleTimeoutSeconds);
@@ -80,6 +90,9 @@ public class HttpServer {
 	
 	/**
 	 * 
+	 * @param port
+	 * @param httpHandler
+	 * @throws IOException
 	 */
 	public void start(int port,HttpHandler httpHandler) throws IOException{
 		this.httpHandler = httpHandler;

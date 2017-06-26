@@ -118,11 +118,11 @@ public class TcpConnectionManager {
 			
 		}
 	};
-	private Thread checkSocketStatusThread = new Thread(checkSocketStatusLogic,"CheckSocketStatus_0");
+	private Thread checkSocketStatusThread;
 	/**
 	 * 
 	 */
-	private Thread distributionTaskThread = new Thread(distributionTaskLogic,"DistributionTask_0");
+	private Thread distributionTaskThread;
 	/**
 	 * 
 	 */
@@ -155,6 +155,8 @@ public class TcpConnectionManager {
 		exeTaskThreads = Executors.newFixedThreadPool(exeIoTaskThreadCount, exeTaskThreadFactory);
 		
 		//start thread
+		checkSocketStatusThread = new Thread(checkSocketStatusLogic,"CheckSocketStatus_0");
+		distributionTaskThread = new Thread(distributionTaskLogic,"DistributionTask_0");
 		checkSocketStatusThread.start();
 		distributionTaskThread.start();
 	}

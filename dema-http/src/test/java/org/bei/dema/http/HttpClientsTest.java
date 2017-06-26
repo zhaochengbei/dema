@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import org.bei.dema.tcp.IoHandler;
 import org.bei.dema.tcp.TcpClients;
 import org.bei.dema.tcp.TcpConnection;
+import org.bei.dema.tcp.TcpConnectionCloseReason;
 
 /**
  * author：zhaochengbei
@@ -14,64 +15,52 @@ public class HttpClientsTest {
 	/**
 	 * 
 	 */
-	static private TcpClients tcpClients = new TcpClients();
-	
-	static private IoHandler ioHandler = new IoHandler() {
-		private int count = 0;
-		public void onRead(TcpConnection connection){
-//			System.out.println("c_read");
-			if(connection.packet == null){
-				connection.packet = new HttpResponse();
-			}
-			HttpResponse response = (HttpResponse)connection.packet;
-			ByteBuffer byteBuffer = ByteBuffer.allocate(connection.available());
-			connection.read(byteBuffer);
-			byteBuffer.flip();
-			HttpResponse result = null;
-			
-			try {
-				result = HttpSerializeUtils.deSerialize(byteBuffer, response);
-			} catch (HttpParseException e) {
-				connection.close(HttpResponseStatusPhrase.map.get(HttpResponseStatus.BAD_REQUEST));
-//				e.printStackTrace();
-//				
-			}
-			if(result != null){
-//				System.out.println(result.toString());
-				connection.close("");
-			}
-		}
-		
-		public void onClose(TcpConnection connection, String reason)  {
-//			System.out.println("c_close");
-		}
-		
-		public void onAccept(TcpConnection connection)  {
-//			System.out.println("c_accept");
+	static private HttpClients httpClients = new HttpClients();
+	/**
+	 * 
+	 */
+	static private int count=0;
+	/**
+	 * 
+	 */
+	static private HttpHandler httpHandler = new HttpHandler() {
+
+		public void onAccept(HttpContext context) {
+			// TODO Auto-generated method stub
 			//发送一个请求;
 			HttpRequest request = new HttpRequest();
 			request.method = HttpMethodType.GET;
 			request.uri = "/";
 			request.version = HttpVersion.version1_1;
 			request.host = "localhost";
-//			System.out.println(request);
-			ByteBuffer byteBuffer = HttpSerializeUtils.serialize(request);
-			byteBuffer.flip();
-			connection.writeAndFlush(byteBuffer);
-			System.out.println("totalReqeustCount :"+(++count)+",inRequestingConnection="+tcpClients.getConnections().size());
+			context.write(request);
+			System.out.println("totalReqeustCount :"+(++count)+",inRequestingConnection="+httpClients.getConnections().size());
+			
+		}
+		public void onHttpResponse(HttpResponse httpResponse, HttpContext context) {
+			// TODO Auto-generated method stub
+			if(httpResponse != null){
+				context.close(TcpConnectionCloseReason.NormalActiveClose);
+			}
+//		}
+		}
+		
+		public void onHttpRequest(HttpRequest request, HttpContext context) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onClose(HttpContext context, String reason) {
+			// TODO Auto-generated method stub
+			
 		}
 	};
 	
 	static public void main(String[] args){
 		try {
-			tcpClients.start("localhost", 8080, 100000, 1, ioHandler);
-//			while(true){
-//				System.out.println("connection count:"+tcpClients.getConnections().size());
-//				Thread.sleep(1);
-//			}
-//			httpServer.config(1000, 0);
-//			httpServer.start(8090, httpHandler);
-//			System.out.println("server started");
+			httpClients.start("localhost", 8080, 100000, 1, httpHandler);
+			Thread.sleep(3000);
+			httpClients.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

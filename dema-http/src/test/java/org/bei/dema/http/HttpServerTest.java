@@ -2,6 +2,8 @@ package org.bei.dema.http;
 
 import java.io.IOException;
 
+import org.bei.dema.tcp.TcpConnection;
+
 /**
  * author：zhaochengbei
  * date：2017/6/8
@@ -15,16 +17,23 @@ public class HttpServerTest {
 	 * 
 	 */
 	static private HttpHandler httpHandler = new HttpHandler() {
-		
+
+		public void onAccept(HttpContext context) {
+			
+		}
 		public void onHttpRequest(HttpRequest request, HttpContext context){
-			// TODO Auto-generated method stub
-//			System.out.println("onRequest="+request);
 			HttpResponse response = new HttpResponse();
 			response.status = HttpResponseStatus.OK;
-			response.phrase = HttpResponseStatusPhrase.map.get(response.status);
+			response.phrase = HttpResponseStatus.phraseMap.get(response.status);
 			response.content = "hello world!".getBytes();
 			context.write(response);
-			context.close();
+			context.close(HttpResponseStatus.phraseMap.get(HttpResponseStatus.OK));
+		}
+		public void onHttpResponse(HttpResponse httpResponse, HttpContext context) {
+			
+		}
+		public void onClose(HttpContext context, String reason) {
+			
 		}
 	};
 	static public void main(String[] args){

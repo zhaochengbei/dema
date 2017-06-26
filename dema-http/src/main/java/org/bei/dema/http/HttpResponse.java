@@ -1,6 +1,5 @@
 package org.bei.dema.http;
 
-import java.util.Map;
 
 /**
  * author：zhaochengbei

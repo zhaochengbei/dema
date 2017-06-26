@@ -12,6 +12,8 @@ public class WebSocketSerializeUtils {
 
 	/**
 	 * 
+	 * @param frame
+	 * @return
 	 */
 	static public ByteBuffer serialize(WebSocketFrame frame){
 		//general head
@@ -65,6 +67,9 @@ public class WebSocketSerializeUtils {
 	}
 	/**
 	 * 
+	 * @param frame
+	 * @param connection
+	 * @return
 	 */
 	static public WebSocketFrame deSerialize(WebSocketFrame frame,TcpConnection connection){
 

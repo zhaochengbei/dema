@@ -11,6 +11,18 @@ import org.bei.dema.tcp.TcpConnection;
 public class HttpConnectionUtils {
 	/**
 	 * 
+	 * @param connection
+	 * @param request
+	 */
+	static public void writeHttpRequest(TcpConnection connection, HttpRequest request){
+		ByteBuffer byteBuffer = HttpSerializeUtils.serialize(request);
+		byteBuffer.flip();
+		connection.writeAndFlush(byteBuffer);
+	}
+	/**
+	 * 
+	 * @param connection
+	 * @param response
 	 */
 	static public void writeHttpResponse(TcpConnection connection, HttpResponse response){
 		ByteBuffer byteBuffer = HttpSerializeUtils.serialize(response);
