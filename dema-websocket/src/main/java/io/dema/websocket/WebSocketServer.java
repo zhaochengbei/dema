@@ -3,6 +3,7 @@ package io.dema.websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,7 +42,13 @@ public class WebSocketServer {
 		public void onAccept(TcpConnection connection) {
 			WebSocketConnection webSocketConnection = new WebSocketConnection();
 			webSocketConnection.tcpConnection = connection;
-			webSocketConnections.put(connection, webSocketConnection);
+			/**
+			 * websocketConnections is a safe data，when call they method will lock the obj,
+			 * there we add a lock will not effect performance
+			 */
+			synchronized (webSocketConnections) {
+				webSocketConnections.put(connection, webSocketConnection);
+			}
 			webSocketHandler.onAccpet(webSocketConnection);
 		}
 		public void onRead(TcpConnection connection) {
@@ -106,7 +113,10 @@ public class WebSocketServer {
 			webSocketHandler.onReadIdle(webSocketConnection);
 		}
 		public void onClose(TcpConnection connection, String reason) {
-			WebSocketConnection webSocketConnection = webSocketConnections.remove(connection);
+			WebSocketConnection webSocketConnection;
+			synchronized (webSocketConnections) {
+				webSocketConnection = webSocketConnections.remove(connection);
+			}
 			webSocketHandler.onClose(webSocketConnection);
 		}
 		
@@ -134,6 +144,9 @@ public class WebSocketServer {
 	}
 	/**
 	 * 
+	 * @param maxConnectionCount
+	 * @param readIdleTimeoutSeconds
+	 * @throws IOException
 	 */
 	public void config(int maxConnectionCount,int readIdleTimeoutSeconds) throws IOException{
 		tcpServer.config(maxConnectionCount, readIdleTimeoutSeconds);
@@ -141,10 +154,30 @@ public class WebSocketServer {
 	
 	/**
 	 * 
+	 * @param port
+	 * @param webSocketHandler
+	 * @throws IOException
 	 */
 	public void start(int port,WebSocketHandler webSocketHandler) throws IOException{
 		this.webSocketHandler = webSocketHandler;
 		tcpServer.start(port, ioHandler);
 	}
-	
+	/**
+	 * 
+	 */
+	public void closeAllWebSocketConnection(){
+		synchronized (webSocketConnections) {
+			for (Iterator<WebSocketConnection> iterator = webSocketConnections.values().iterator(); iterator.hasNext();) {
+				WebSocketConnection webSocketConnection = (WebSocketConnection) iterator.next();
+				webSocketConnection.close();
+			}
+		}
+	}
+	/**
+	 * 
+	 */
+	public void shutdown() throws IOException{
+		tcpServer.shutdown();
+		webSocketConnections.clear();
+	}
 }
