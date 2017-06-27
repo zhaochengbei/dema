@@ -2,9 +2,10 @@ general:<br/>
 dema is a set of java nio network library，strong(and no leak)，high-performance and easy to use. it incloud dema-tcp and dema-http and dema-websocket three library.
 
 compare with netty:<br/>
-when identical connection and packet send/receive,only only pay 1/4 memory and 50% cpu,and not delay not leak.
+when identical connection and packet send/receive,only pay 1/4 memory and 50% cpu,and not delay not leak.
 
 dema-tcp simple:<br/>
+
 	/**
 	 * 
 	 */
@@ -41,19 +42,20 @@ dema-tcp simple:<br/>
 			System.out.println("s_onClose,reason="+connection.closeReason+","+connection.socket);
 		}
 	};
+	
+	
     public static void main( String[] args )
     {
     	try {
-    	    tcpServer.config(100000,12);//100 000 is max connection count ,12 is read idle timeout time unit is second
-    	    tcpServer.start(9090, ioHandler);
+    		tcpServer.config(100000,12);//100 000 is max connection count ,12 is read idle timeout time unit is second
+    		tcpServer.start(9090, ioHandler);
             System.out.println( "server started" );        	
-	} catch (Exception e) {
-		e.printStackTrace();
-	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
-    
-    
-    
+
+
 dema-http simple:<br/>
 
 	/**
