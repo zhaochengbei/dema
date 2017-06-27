@@ -5,8 +5,11 @@
   
   <groupId>io.github.zhaochengbei</groupId>
   <artifactId>dema-tcp</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <name>dema-tcp</name>
+  <description>dema-tcp is a nio tcp library</description>  
+  <dependencies>
+  </dependencies>
   
   <url>https://github.com/zhaochengbei/dema</url>
 	<licenses>
@@ -37,8 +40,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  <dependencies>
-  </dependencies>
   
    <profiles>
         <profile>

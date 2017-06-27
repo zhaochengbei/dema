@@ -3,7 +3,6 @@ package io.dema.websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.dema.http.HttpParseException;
@@ -13,7 +12,6 @@ import io.dema.http.HttpSerializeUtils;
 import io.dema.tcp.IoHandler;
 import io.dema.tcp.TcpClients;
 import io.dema.tcp.TcpConnection;
-import io.dema.tcp.TcpConnectionCloseReason;
 
 /**
  * author：zhaochengbei

@@ -1,19 +1,12 @@
 package io.dema.websocket;
 
-import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import io.dema.http.HttpRequest;
 import io.dema.http.HttpResponse;
-import io.dema.http.HttpSerializeUtils;
-import io.dema.tcp.IoHandler;
-import io.dema.tcp.TcpClients;
-import io.dema.tcp.TcpConnection;
-import io.dema.tcp.WriteTask;
 import io.dema.websocket.WebSocketClients;
 import io.dema.websocket.WebSocketConnection;
 import io.dema.websocket.WebSocketFrame;
@@ -90,7 +83,7 @@ public class WebSocketClientTest {
     }
     static public void testClients()throws Exception{
 		try {
-			webSocketClients.start("localhost", 8090, 500, 1, webSocketHandler);
+			webSocketClients.start("localhost", 8090, 5000, 1, webSocketHandler);
 			//time send packet
 			int writeCount = 20000;
 			while(writeCount -- >0){
@@ -112,7 +105,7 @@ public class WebSocketClientTest {
 						webSocketConnection.tcpConnection.lastWriteTime = System.currentTimeMillis();
 					}
 				}
-				Thread.sleep(10);
+				Thread.sleep(1);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

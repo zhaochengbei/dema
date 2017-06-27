@@ -33,6 +33,7 @@ public interface WebSocketHandler {
 	public void onReadIdle(WebSocketConnection webSocketConnection);
 	/**
 	 * 
+	 * @param webSocketConnection
 	 */
 	public void onClose(WebSocketConnection webSocketConnection);
 }

@@ -42,10 +42,11 @@ public class WebSocketServerTest {
 				frame.hasMask = false;
 				frame.mark = null;
 				System.out.println("send frame="+frame);
-				//send to All
-				for (WebSocketConnection webSocketConnection2 : webSocketServer.webSocketConnections.values()) {
-					webSocketConnection2.send(frame);
-				}
+				webSocketConnection.send(frame);
+//				//send to All
+//				for (WebSocketConnection webSocketConnection2 : webSocketServer.webSocketConnections.values()) {
+//					webSocketConnection2.send(frame);
+//				}
 			}
 		}
 		

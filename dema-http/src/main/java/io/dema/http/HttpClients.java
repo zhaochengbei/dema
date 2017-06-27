@@ -77,7 +77,7 @@ public class HttpClients {
 	 * @param port
 	 * @param count
 	 * @param createGap
-	 * @param httpHandler
+	 * @param httpClientHandler
 	 * @throws IOException
 	 */
 	public void start(String ip,int port,int count,int createGap,HttpClientHandler httpClientHandler) throws IOException {

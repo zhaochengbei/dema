@@ -46,7 +46,6 @@ public class WebSocketConnection {
 	/**
 	 * 
 	 * @param frame
-	 * @throws WebSocketException
 	 */
 	public void send(WebSocketFrame frame){
 		if(hasHandShake == false){

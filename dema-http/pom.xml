@@ -5,10 +5,19 @@
   
   <groupId>io.github.zhaochengbei</groupId>
   <artifactId>dema-http</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <name>dema-http</name>
+  <description>dema-http is a http library base on dema-tcp.</description>
   
-    <url>https://github.com/zhaochengbei/dema</url>
+  <dependencies>
+	<dependency>
+		<artifactId>dema-tcp</artifactId>
+		<groupId>io.github.zhaochengbei</groupId>
+		<version>1.1</version>
+	</dependency>
+  </dependencies>
+  
+  <url>https://github.com/zhaochengbei/dema</url>
 	<licenses>
      <license>
        <name>The Apache License, Version 2.0</name>
@@ -33,19 +42,10 @@
       <url>https://github.com/zhaochengbei/dema</url>
      <tag>v1.0</tag>
   </scm>
-  
-  
+  	
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  <dependencies>
-	<dependency>
-		<artifactId>dema-tcp</artifactId>
-		<groupId>io.github.zhaochengbei</groupId>
-		<version>1.0</version>
-	</dependency>
-  </dependencies>
-  
   
    <profiles>
         <profile>

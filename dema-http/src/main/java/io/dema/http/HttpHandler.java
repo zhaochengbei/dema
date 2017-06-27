@@ -19,7 +19,6 @@ public interface HttpHandler {
 	/**
 	 * 
 	 * @param context
-	 * @param reason
 	 */
 	public void onReadIdle(HttpContext context);
 	/**
