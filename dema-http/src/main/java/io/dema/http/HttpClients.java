@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.dema.tcp.IoHandler;
 import io.dema.tcp.TcpClients;
 import io.dema.tcp.TcpConnection;
+import io.dema.tcp.TcpConnectionCloseReason;
 
 /**
  * author：zhaochengbei
@@ -28,6 +29,12 @@ public class HttpClients {
 	 * 
 	 */
 	private IoHandler ioHandler = new IoHandler() {
+		public void onAccept(TcpConnection connection)  {
+			HttpContext context = new HttpContext();
+			context.connection = connection;
+			httpContexts.put(connection, context);
+			httpClientHandler.onAccept(context);
+		}
 		public void onRead(TcpConnection connection){
 			if(connection.packet == null){
 				connection.packet = new HttpResponse();
@@ -46,26 +53,24 @@ public class HttpClients {
 			
 			HttpContext context = httpContexts.get(connection);
 			connection.packet = null;
-			httpHandler.onHttpResponse(result, context);
+			httpClientHandler.onHttpResponse(result, context);
+		}
+		public void onReadIdle(TcpConnection connection) {
+			connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
 		}
 		
 		public void onClose(TcpConnection connection, String reason)  {
 			HttpContext context = httpContexts.remove(connection);
-			httpHandler.onClose(context,reason);
+			httpClientHandler.onClose(context,reason);
 		}
 		
-		public void onAccept(TcpConnection connection)  {
-			HttpContext context = new HttpContext();
-			context.connection = connection;
-			httpContexts.put(connection, context);
-			httpHandler.onAccept(context);
-		}
+
 	};
 
 	/**
 	 * 
 	 */
-	private HttpHandler httpHandler;
+	private HttpClientHandler httpClientHandler;
 	/**
 	 * 
 	 * @param ip
@@ -75,8 +80,8 @@ public class HttpClients {
 	 * @param httpHandler
 	 * @throws IOException
 	 */
-	public void start(String ip,int port,int count,int createGap,HttpHandler httpHandler) throws IOException {
-		this.httpHandler = httpHandler;
+	public void start(String ip,int port,int count,int createGap,HttpClientHandler httpClientHandler) throws IOException {
+		this.httpClientHandler = httpClientHandler;
 		tcpClients.start(ip, port, count, createGap, ioHandler);
 	}
 

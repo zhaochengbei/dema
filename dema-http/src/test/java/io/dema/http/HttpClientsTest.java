@@ -30,11 +30,9 @@ public class HttpClientsTest {
 	/**
 	 * 
 	 */
-	static private HttpHandler httpHandler = new HttpHandler() {
-
+	static private HttpClientHandler httpClientHandler = new HttpClientHandler() {
+		
 		public void onAccept(HttpContext context) {
-			// TODO Auto-generated method stub
-			//发送一个请求;
 			HttpRequest request = new HttpRequest();
 			request.method = HttpMethodType.GET;
 			request.uri = "/";
@@ -44,28 +42,26 @@ public class HttpClientsTest {
 			System.out.println("totalReqeustCount :"+(++count)+",inRequestingConnection="+httpClients.getConnections().size());
 			
 		}
+		
 		public void onHttpResponse(HttpResponse httpResponse, HttpContext context) {
-			// TODO Auto-generated method stub
 			if(httpResponse != null){
 				context.close(TcpConnectionCloseReason.NormalActiveClose);
 			}
-//		}
 		}
-		
-		public void onHttpRequest(HttpRequest request, HttpContext context) {
-			// TODO Auto-generated method stub
+		public void onReadIdle(HttpContext context) {
+			context.close(TcpConnectionCloseReason.ReadIdleTimeOut);
+			
+		}
+		public void onClose(HttpContext context, String reason) {
 			
 		}
 
-		public void onClose(HttpContext context, String reason) {
-			// TODO Auto-generated method stub
-			
-		}
+		
 	};
 	
 	static public void main(String[] args){
 		try {
-			httpClients.start("localhost", 8080, 100000, 1, httpHandler);
+			httpClients.start("localhost", 8080, 100000, 1, httpClientHandler);
 			Thread.sleep(3000);
 			httpClients.shutdown();
 		} catch (Exception e) {

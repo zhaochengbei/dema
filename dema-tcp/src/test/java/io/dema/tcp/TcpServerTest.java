@@ -52,9 +52,14 @@ public class TcpServerTest
 			
 		}
 		
+		public void onReadIdle(TcpConnection connection) {
+			//direct close
+			connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
+		}
 		public void onClose(TcpConnection connection,String reason){
 			System.out.println("s_onClose,reason="+connection.closeReason+","+connection.socket);
 		}
+
 		
 	};
 	

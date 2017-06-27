@@ -9,6 +9,7 @@ import io.dema.http.HttpResponse;
 import io.dema.http.HttpResponseStatus;
 import io.dema.http.HttpServer;
 import io.dema.tcp.TcpConnection;
+import io.dema.tcp.TcpConnectionCloseReason;
 
 /**
  * author：zhaochengbei
@@ -22,7 +23,7 @@ public class HttpServerTest {
 	/**
 	 * 
 	 */
-	static private HttpHandler httpHandler = new HttpHandler() {
+	static private HttpServerHandler httpServerHandler = new HttpServerHandler() {
 
 		public void onAccept(HttpContext context) {
 			
@@ -35,8 +36,8 @@ public class HttpServerTest {
 			context.write(response);
 			context.close(HttpResponseStatus.phraseMap.get(HttpResponseStatus.OK));
 		}
-		public void onHttpResponse(HttpResponse httpResponse, HttpContext context) {
-			
+		public void onReadIdle(HttpContext context) {
+			context.close(TcpConnectionCloseReason.ReadIdleTimeOut);
 		}
 		public void onClose(HttpContext context, String reason) {
 			
@@ -45,7 +46,7 @@ public class HttpServerTest {
 	static public void main(String[] args){
 		try {
 			httpServer.config(1000, 10);
-			httpServer.start(8080, httpHandler);
+			httpServer.start(8080, httpServerHandler);
 			System.out.println("server started");
 //			while(true){
 //				Thread.sleep(10);

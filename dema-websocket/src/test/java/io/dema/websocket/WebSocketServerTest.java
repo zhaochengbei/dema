@@ -33,38 +33,28 @@ public class WebSocketServerTest {
 			webSocketConnection.write(httpResponse);
 			
 		}
-		public void onFrame(WebSocketConnection webSocketConnection, WebSocketFrame packet) {
-			System.out.println("s_onFrame,"+packet);
-			if(packet.opcode == WebSocketOpcode.CLOSE){
-				WebSocketFrame closePacket = new WebSocketFrame();
-				packet.opcode = WebSocketOpcode.CLOSE;
-				try {
-					webSocketConnection.send(closePacket);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		public void onFrame(WebSocketConnection webSocketConnection, WebSocketFrame frame) {
+			System.out.println("s_onFrame,"+frame);
+			if(frame.opcode == WebSocketOpcode.CLOSE){
 				webSocketConnection.close();
-			}else{
+			}else if(frame.opcode == WebSocketOpcode.TEXT_MSG){
 				// down data cannot have mark
-				packet.hasMask = false;
-				packet.mark = null;
-				System.out.println("send frame="+packet	);
-				//转发给所有人；
+				frame.hasMask = false;
+				frame.mark = null;
+				System.out.println("send frame="+frame);
+				//send to All
 				for (WebSocketConnection webSocketConnection2 : webSocketServer.webSocketConnections.values()) {
-					try {
-						webSocketConnection2.send(packet);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					
+					webSocketConnection2.send(frame);
 				}
-				
-						
 			}
 		}
 		
 		public void onClose(WebSocketConnection webSocketContext) {
 			System.out.println("s_onClose");
+		}
+
+		public void onReadIdle(WebSocketConnection webSocketConnection) {
+			webSocketConnection.close();
 		}
 		
 	};

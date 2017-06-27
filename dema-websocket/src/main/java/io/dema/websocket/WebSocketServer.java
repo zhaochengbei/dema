@@ -37,7 +37,13 @@ public class WebSocketServer {
 	 * 
 	 */
 	private IoHandler ioHandler = new IoHandler() {
-		
+
+		public void onAccept(TcpConnection connection) {
+			WebSocketConnection webSocketConnection = new WebSocketConnection();
+			webSocketConnection.tcpConnection = connection;
+			webSocketConnections.put(connection, webSocketConnection);
+			webSocketHandler.onAccpet(webSocketConnection);
+		}
 		public void onRead(TcpConnection connection) {
 			//if has not hand shake
 			WebSocketConnection webSocketConnection = webSocketConnections.get(connection);
@@ -94,19 +100,17 @@ public class WebSocketServer {
 				}
 			}
 		}
-		
+
+		public void onReadIdle(TcpConnection connection) {
+			WebSocketConnection webSocketConnection = webSocketConnections.get(connection);
+			webSocketHandler.onReadIdle(webSocketConnection);
+		}
 		public void onClose(TcpConnection connection, String reason) {
 			WebSocketConnection webSocketConnection = webSocketConnections.remove(connection);
 			webSocketHandler.onClose(webSocketConnection);
 		}
 		
-		public void onAccept(TcpConnection connection) {
-			WebSocketConnection webSocketConnection = new WebSocketConnection();
-			webSocketConnection.tcpConnection = connection;
-			webSocketConnections.put(connection, webSocketConnection);
-			webSocketHandler.onAccpet(webSocketConnection);
 
-		}
 	}; 
 
 	/**

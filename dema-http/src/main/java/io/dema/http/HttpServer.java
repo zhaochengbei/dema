@@ -10,6 +10,7 @@ import javax.print.DocFlavor.READER;
 import io.dema.http.HttpParseException;
 import io.dema.tcp.IoHandler;
 import io.dema.tcp.TcpConnection;
+import io.dema.tcp.TcpConnectionCloseReason;
 import io.dema.tcp.TcpServer;
 
 /**
@@ -44,7 +45,7 @@ public class HttpServer {
 				HttpRequest request2 = HttpSerializeUtils.deSerialize(byteBuffer, request);				//判断是否解析完成
 				if(request2 != null){
 					HttpContext context = httpContexts.get(connection);
-					httpHandler.onHttpRequest(request, context);
+					httpServerHandler.onHttpRequest(request, context);
 					connection.packet = null;
 				}
 			} catch (HttpParseException e) {
@@ -66,18 +67,22 @@ public class HttpServer {
 			HttpContext context = new HttpContext();
 			context.connection = connection;
 			httpContexts.put(connection, context);
-			httpHandler.onAccept(context);
+			httpServerHandler.onAccept(context);
+		}
+		public void onReadIdle(TcpConnection connection) {
+			connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
 		}
 		public void onClose(TcpConnection connection, String reason){
 			HttpContext context = httpContexts.remove(connection);
-			httpHandler.onClose(context,reason);
+			httpServerHandler.onClose(context,reason);
 		}
+
 		
 	};
 	/**
 	 * 
 	 */
-	private HttpHandler httpHandler;
+	private HttpServerHandler httpServerHandler;
 	/**
 	 * 
 	 * @param maxConnectionCount
@@ -91,11 +96,11 @@ public class HttpServer {
 	/**
 	 * 
 	 * @param port
-	 * @param httpHandler
+	 * @param httpServerHandler
 	 * @throws IOException
 	 */
-	public void start(int port,HttpHandler httpHandler) throws IOException{
-		this.httpHandler = httpHandler;
+	public void start(int port,HttpServerHandler httpServerHandler) throws IOException{
+		this.httpServerHandler = httpServerHandler;
 		tcpServer.start(port, ioHandler);
 	}
 	/**

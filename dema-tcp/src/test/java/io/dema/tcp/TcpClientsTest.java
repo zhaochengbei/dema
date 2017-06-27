@@ -23,11 +23,13 @@ import io.dema.tcp.TcpConnection;
 
 public class TcpClientsTest {
 	static private IoHandler ioHandler = new IoHandler() {
-		
+
+		public void onAccept(TcpConnection connection) {
+			System.out.println("c_onAccept,"+connection.socket);
+		}
 		public void onRead(TcpConnection connection){
 			try {
 				ByteBuffer data = ConnectionUtils.readPacket(connection, 0,4, 4,256);
-//				ByteBuffer byteBuffer = getTestPacket();
 				System.out.println("c_onRead,"+connection.socket);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -39,15 +41,16 @@ public class TcpClientsTest {
 			
 		}
 		
-		public void onAccept(TcpConnection connection) {
-			System.out.println("c_onAccept,"+connection.socket);
+		public void onReadIdle(TcpConnection connection) {
+			connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
 		}
+
 	};
 	
 	
 	static private TcpClients tcpClients;
 	/**
-	 * 负责发送数据的线程；
+	 * be responsiable for send data；
 	 */
 	static private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),new ThreadFactory() {
 		public int threadIndex = 0;

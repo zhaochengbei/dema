@@ -48,7 +48,7 @@ public class WebSocketConnection {
 	 * @param frame
 	 * @throws WebSocketException
 	 */
-	public void send(WebSocketFrame frame)throws WebSocketException{
+	public void send(WebSocketFrame frame){
 		if(hasHandShake == false){
 			tcpConnection.close("has not handshake");
 		}
@@ -60,6 +60,12 @@ public class WebSocketConnection {
 	 * 
 	 */
 	public void close(){
+		//if tcp connection is not close
+		if(tcpConnection.isClose() == false){
+			WebSocketFrame closePacket = new WebSocketFrame();
+			closePacket.opcode = WebSocketOpcode.CLOSE;
+			send(closePacket);
+		}
 		tcpConnection.close(TcpConnectionCloseReason.NormalActiveClose);
 	}
 	

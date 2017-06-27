@@ -15,18 +15,13 @@ public interface HttpHandler {
 	 * @param context
 	 */
 	public void onAccept(HttpContext context);
+
 	/**
 	 * 
-	 * @param request
 	 * @param context
+	 * @param reason
 	 */
-	public void onHttpRequest(HttpRequest request,HttpContext context);
-	/**
-	 * 
-	 * @param httpResponse
-	 * @param context
-	 */
-	public void onHttpResponse(HttpResponse httpResponse,HttpContext context);
+	public void onReadIdle(HttpContext context);
 	/**
 	 * 
 	 * @param context

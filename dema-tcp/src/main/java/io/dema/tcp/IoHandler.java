@@ -16,6 +16,11 @@ public interface IoHandler {
 	 * 
 	 */
 	public void onRead(TcpConnection connection);
+
+	/**
+	 * 
+	 */
+	public void onReadIdle(TcpConnection connection);
 	
 	/**
 	 * first remove connection from collections,second call the method;

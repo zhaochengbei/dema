@@ -83,7 +83,7 @@ public class TcpServer {
 						TcpConnection connection = getConnections().get(i);
 						if(readIdleTimeoutSeconds !=0 &&connection.isClose() == false&&time - connection.lastReadTime> readIdleTimeoutSeconds*1000){
 							//use part will receive a close event;
-							connection.close(TcpConnectionCloseReason.ReadIdleTimeOut);
+							ioHandler.onReadIdle(connection);
 						}
 					}
 				}catch (ArrayIndexOutOfBoundsException e) {
@@ -94,7 +94,6 @@ public class TcpServer {
 					Thread.sleep(readIdleCheckGapSeconds);
 				} catch (InterruptedException e) {
 					break;
-//					// TODO Auto-generated catch block
 //					e.printStackTrace();
 				}
 			}
@@ -117,11 +116,12 @@ public class TcpServer {
 	/**
 	 * 
 	 */
+	private TcpConnectionManager connectionManager = new TcpConnectionManager();
+
 	/**
 	 * 
 	 */
-	private TcpConnectionManager connectionManager = new TcpConnectionManager();
-
+	private IoHandler ioHandler;
 	/**
 	 * 
 	 * @param maxConnectionCount
@@ -148,6 +148,7 @@ public class TcpServer {
 	 * 
 	 */
 	public void start(int port,IoHandler ioHandler) throws IOException{
+		this.ioHandler = ioHandler;
 		connectionManager.start(ioHandler);
 		accepter = new ServerSocket(port);
 		acceptSocketThread.start();

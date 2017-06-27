@@ -3,6 +3,9 @@ package io.dema.websocket;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import io.dema.http.HttpRequest;
 import io.dema.http.HttpResponse;
@@ -30,26 +33,41 @@ public class WebSocketClientTest {
 	 * 
 	 */
 	static private WebSocketHandler webSocketHandler = new WebSocketHandler() {
-		
-		public void onUpgrade(HttpRequest httpRequest, HttpResponse httpResponse, WebSocketConnection webSocketConnection) {
-			System.out.println("c_onUpgrade");
-		}
-		
-		public void onFrame(WebSocketConnection webSocketConnection, WebSocketFrame packet) {
-			System.out.println("c_onFrame");
-		}
-		
-		public void onClose(WebSocketConnection webSocketConnection) {
-			System.out.println("c_onClose");
-		}
-		
+
 		public void onAccpet(WebSocketConnection webSocketConnection) {
 			System.out.println("c_onAccept");
 			HttpRequest httpRequest = WebSocketHandShakePacketBuilder.createHandShakeRequest(webSocketConnection.tcpConnection.socket.getInetAddress().getHostAddress());
 			webSocketConnection.write(httpRequest);
 		}
-	};
+		public void onUpgrade(HttpRequest httpRequest, HttpResponse httpResponse, WebSocketConnection webSocketConnection) {
+			System.out.println("c_onUpgrade");
+		}
+		
+		public void onFrame(WebSocketConnection webSocketConnection, WebSocketFrame frame) {
+			System.out.println("c_onFrame");
+			if(frame.opcode == WebSocketOpcode.CLOSE){
+				webSocketConnection.close();
+			}
+		}
 
+		public void onReadIdle(WebSocketConnection webSocketConnection) {
+			webSocketConnection.close();
+		}
+		public void onClose(WebSocketConnection webSocketConnection) {
+			System.out.println("c_onClose");
+		}
+		
+
+	};
+	/**
+	 * 负责发送数据的线程；
+	 */
+	static private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),new ThreadFactory() {
+		public int threadIndex = 0;
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "sendTestData"+threadIndex);
+		}
+	} );
 	/**
 	 * 
 	 * @param args
@@ -64,6 +82,7 @@ public class WebSocketClientTest {
         		webSocketClients.shutdown();
     			Thread.sleep(2*1000);
     		}
+    		executorService.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -86,11 +105,14 @@ public class WebSocketClientTest {
 						//send frame
 						WebSocketFrame webSocketFrame = new WebSocketFrame();
 						webSocketFrame.data = "packet".getBytes();
-						webSocketConnection.send(webSocketFrame);
-						webSocketConnection.tcpConnection.lastWriteTime = time;
+						WebSocketSendMessageTask messageTask = new WebSocketSendMessageTask();
+						messageTask.webSocketConnection = webSocketConnection;
+						messageTask.webSocketFrame = webSocketFrame;
+						executorService.execute(messageTask);
+						webSocketConnection.tcpConnection.lastWriteTime = System.currentTimeMillis();
 					}
 				}
-				Thread.sleep(1);
+				Thread.sleep(10);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

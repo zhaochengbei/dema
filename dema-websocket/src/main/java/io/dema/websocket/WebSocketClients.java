@@ -33,7 +33,14 @@ public class WebSocketClients {
 	 * 
 	 */
 	private IoHandler ioHandler = new IoHandler() {
-		
+
+		public void onAccept(TcpConnection connection) {
+			//create websocketconnection'
+			WebSocketConnection webSocketConnection = new WebSocketConnection();
+			webSocketConnection.tcpConnection = connection;
+			webSocketConnections.put(connection, webSocketConnection);
+			webSocketHandler.onAccpet(webSocketConnection);
+		}
 		public void onRead(TcpConnection connection) {
 			WebSocketConnection webSocketConnection = webSocketConnections.get(connection);
 			ByteBuffer byteBuffer = ByteBuffer.allocate(connection.available());
@@ -77,19 +84,17 @@ public class WebSocketClients {
 			}
 			
 		}
+		public void onReadIdle(TcpConnection connection) {
+			WebSocketConnection webSocketConnection = webSocketConnections.remove(connection);
+			webSocketConnection.close();	
+		}
 		
 		public void onClose(TcpConnection connection, String reason) {
 			WebSocketConnection webSocketConnection = webSocketConnections.remove(connection);
 			webSocketHandler.onClose(webSocketConnection);
 		}
 		
-		public void onAccept(TcpConnection connection) {
-			//create websocketconnection'
-			WebSocketConnection webSocketConnection = new WebSocketConnection();
-			webSocketConnection.tcpConnection = connection;
-			webSocketConnections.put(connection, webSocketConnection);
-			webSocketHandler.onAccpet(webSocketConnection);
-		}
+
 	};
 	/**
 	 * 
