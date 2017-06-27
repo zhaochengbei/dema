@@ -9,7 +9,7 @@ public class TcpConnectionCloseReason {
 	static public final String ReadError ="ReadError";
 	static public final String WriteError ="WriteError";
 	static public final String ReadIdleTimeOut ="ReadIdleTimeOut";
-	static public final String ShutDownTcpServer ="ShutDownTcpServer";
+	static public final String ShutDownTcpConnectionManager ="ShutDownTcpConnectionManager";
 	static public final String OtherError ="OtherError";
 	static public final String NormalActiveClose ="NormalActive";
 	

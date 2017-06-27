@@ -1,6 +1,7 @@
 package io.dema.tcp;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -82,7 +83,7 @@ public class TcpClientsTest {
 		 */
 		int writeCount = 20000;
 		while(writeCount -- >0){
-			Vector<TcpConnection> connections = tcpClients.getConnections();
+			ArrayList<TcpConnection> connections = tcpClients.getConnections();
 			System.out.println("last connection "+connections.size());
 			long time = System.currentTimeMillis();
 			for (int i = 0; i < connections.size(); i++) {

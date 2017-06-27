@@ -52,6 +52,13 @@ public class TcpServerTest
 				}
 				data.flip();
 				connection.writeAndFlush(data);
+				//send to all;
+//				synchronized (tcpServer.getConnections()) {
+//					for (int i = 0; i < tcpServer.getConnections().size(); i++) {
+//						connection.writeAndFlush(data);
+//					}
+//				}
+				
 			}	
 		}
 		public void onReadIdle(TcpConnection connection) {

@@ -31,7 +31,7 @@ public class TcpConnectionManager {
 	/**
 	 * 
 	 */
-	public Vector<TcpConnection> connections = new Vector<TcpConnection>();
+	public ArrayList<TcpConnection> connections = new ArrayList<TcpConnection>();
 	/**
 	 * 
 	 */
@@ -46,30 +46,28 @@ public class TcpConnectionManager {
 		public void run() {
 			while(true){
 				try {
-					for (int i = 0; i < connections.size(); i++) {
-						TcpConnection connection = connections.get(i);
-						//check connection is not close
-						if(connection.isClose() == true){
-							remove(connection);
-							i--;
-							continue;
-						}
-						//check connection is not can be read
-						/**
-						 * in same time,use part only receive one read msg, we use inReading Property control;
-						 * 
-						 * thread safe explain:
-						 * after a thread nodify,another thread don't know in immediately,there has a time gap between happy and to know; 
-						 */
-						if(connection.inReading == false&&connection.available()>0){
-							connection.inReading = true;
-							addTask(TcpConnectionManagerTaskType.READ, connection);
+					synchronized (connections) {
+						for (int i = 0; i < connections.size(); i++) {
+							TcpConnection connection = connections.get(i);
+							//check connection is not close
+							if(connection.isClose() == true){
+								remove(connection);
+								i--;
+								continue;
+							}
+							//check connection is not can be read
+							/**
+							 * in same time,use part only receive one read msg, we use inReading Property control;
+							 * 
+							 * thread safe explain:
+							 * after a thread nodify,another thread don't know in immediately,there has a time gap between happy and to know; 
+							 */
+							if(connection.inReading == false&&connection.available()>0){
+								connection.inReading = true;
+								addTask(TcpConnectionManagerTaskType.READ, connection);
+							}
 						}
 					}
-				
-				}catch (ArrayIndexOutOfBoundsException e) {
-//					e.printStackTrace();
-					//do nothing
 				}catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -77,7 +75,6 @@ public class TcpConnectionManager {
 					Thread.sleep(checkStatusGapMillSeconds);
 				} catch (InterruptedException e) {
 					break;
-//					e.printStackTrace();
 				}
 			}
 		}
@@ -170,14 +167,24 @@ public class TcpConnectionManager {
 		checkSocketStatusThread.interrupt();
 		distributionTaskThread.interrupt();
 		while(true){
+			if(checkSocketStatusThread.isAlive() != false||distributionTaskThread.isAlive() != false){
+				break;
+			}
+		}
+		while(true){
 			//keep started task normal complete
 			if(((ThreadPoolExecutor)exeTaskThreads).getActiveCount()==0){
 				exeTaskThreads.shutdown();
 				break;
 			}
 		}
+		synchronized (connections) {
+			for (int i = 0; i < connections.size(); i++) {
+				connections.get(i).close(TcpConnectionCloseReason.ShutDownTcpConnectionManager);
+			}
+			connections.clear();
+		}
 		//clear connection and task;
-		connections.clear();
 		tasks.clear();
 	}
 	/**
@@ -185,13 +192,17 @@ public class TcpConnectionManager {
 	 */
 	public void add(TcpConnection connection){
 		addTask(TcpConnectionManagerTaskType.ACCEPT, connection);
-		connections.add(connection);
+		synchronized (connections) {
+			connections.add(connection);	
+		}
 	}
 	/**
 	 * 
 	 */
 	private void remove(TcpConnection connection){
-		connections.remove(connection);
+		synchronized (connections) {
+			connections.remove(connection);	
+		}
 		addTask(TcpConnectionManagerTaskType.CLOSE, connection);
 	}
 	/**

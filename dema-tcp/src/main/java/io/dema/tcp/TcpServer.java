@@ -3,6 +3,7 @@ package io.dema.tcp;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -61,7 +62,7 @@ public class TcpServer {
 	/**
 	 * 
 	 */
-	private Thread acceptSocketThread = new Thread(acceptSocketLogic,"AcceptSocket_0");
+	private Thread acceptSocketThread;
 	/**
 	 * 
 	 */
@@ -77,41 +78,31 @@ public class TcpServer {
 		
 		public void run() {
 			while(true){
-				try {
-					long time = System.currentTimeMillis();
+				long time = System.currentTimeMillis();
+				ArrayList<TcpConnection> connections = getConnections();
+				synchronized (connections) {
 					for (int i = 0; i < getConnections().size(); i++) {
-						TcpConnection connection = getConnections().get(i);
+						TcpConnection connection = connections.get(i);
 						if(readIdleTimeoutSeconds !=0 &&connection.isClose() == false&&time - connection.lastReadTime> readIdleTimeoutSeconds*1000){
 							//use part will receive a close event;
 							ioHandler.onReadIdle(connection);
 						}
 					}
-				}catch (ArrayIndexOutOfBoundsException e) {
-					//thread confict,need do nothing
 				}
 				
 				try {
 					Thread.sleep(readIdleCheckGapSeconds);
 				} catch (InterruptedException e) {
 					break;
-//					e.printStackTrace();
 				}
 			}
-			
-			
-			
 		}
 	};
 
 	/**
 	 * 
 	 */
-	private ScheduledExecutorService checkReadIdleTimeOutThreads = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-		
-		public Thread newThread(Runnable r) {
-			return new Thread(r,"CheckReadIdleTimeOut_0");
-		}
-	});
+	private Thread checkReadIdleTimeOutThread;
 
 	/**
 	 * 
@@ -151,13 +142,16 @@ public class TcpServer {
 		this.ioHandler = ioHandler;
 		connectionManager.start(ioHandler);
 		accepter = new ServerSocket(port);
+		acceptSocketThread = new Thread(acceptSocketLogic,"AcceptSocket_0");
+		checkReadIdleTimeOutThread = new Thread(checkReadIdleTimeOutLogic,"CheckReadIdleTimeOut_0");
+		
 		acceptSocketThread.start();
-		checkReadIdleTimeOutThreads.execute(checkReadIdleTimeOutLogic);
+		checkReadIdleTimeOutThread.start();
 	}
 	/**
 	 * 
 	 */
-	public Vector<TcpConnection> getConnections(){
+	public ArrayList<TcpConnection> getConnections(){
 		return connectionManager.connections;
 	}
 	
@@ -167,7 +161,7 @@ public class TcpServer {
 	 */
 	public void shutdown() throws IOException{
 		accepter.close();
-		checkReadIdleTimeOutThreads.shutdown();
+		checkReadIdleTimeOutThread.interrupt();
 		connectionManager.shutdown();
 
 	}

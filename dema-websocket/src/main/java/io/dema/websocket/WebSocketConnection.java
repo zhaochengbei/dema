@@ -44,12 +44,14 @@ public class WebSocketConnection {
 		HttpConnectionUtils.writeHttpResponse(tcpConnection, httpResponse);
 	}
 	/**
-	 * 
+	 * if not handshake ,will not send data to connection
 	 * @param frame
 	 */
 	public void send(WebSocketFrame frame){
 		if(hasHandShake == false){
-			tcpConnection.close("has not handshake");
+			//as not connected
+//			tcpConnection.close("has not handshake");//process as tcp,because it not upgrade
+			return;
 		}
 		ByteBuffer byteBuffer = WebSocketSerializeUtils.serialize(frame);
 		byteBuffer.flip();

@@ -2,6 +2,7 @@ package io.dema.http;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
@@ -89,7 +90,7 @@ public class HttpClients {
 	 * 
 	 * @return
 	 */
-	public Vector<TcpConnection> getConnections(){
+	public ArrayList<TcpConnection> getConnections(){
 		return tcpClients.getConnections();
 	}
 	public void shutdown(){

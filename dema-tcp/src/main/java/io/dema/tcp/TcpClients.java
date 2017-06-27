@@ -2,6 +2,7 @@ package io.dema.tcp;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -27,7 +28,7 @@ public class TcpClients{
 	 * 
 	 * @return
 	 */
-	public Vector<TcpConnection> getConnections(){
+	public ArrayList<TcpConnection> getConnections(){
 		return connectionManager.connections;
 	}
 	/**
@@ -61,16 +62,6 @@ public class TcpClients{
 	 * 关闭
 	 */
 	public void shutdown(){
-		Vector<TcpConnection> connections = getConnections();
-		for (int i = 0; i < connections.size(); i++) {
-			try {
-				TcpConnection socket = connections.get(0);
-				socket.close(TcpConnectionCloseReason.ShutDownTcpServer);
-			} catch (ArrayIndexOutOfBoundsException e) {
-				//do nothing
-			}	
-		}
-		
 		connectionManager.shutdown();
 	}
 }

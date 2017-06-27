@@ -44,8 +44,10 @@ public class WebSocketServerTest {
 				System.out.println("send frame="+frame);
 				webSocketConnection.send(frame);
 //				//send to All
-//				for (WebSocketConnection webSocketConnection2 : webSocketServer.webSocketConnections.values()) {
-//					webSocketConnection2.send(frame);
+//				synchronized (webSocketServer.webSocketConnections) {
+//					for (WebSocketConnection webSocketConnection2 : webSocketServer.webSocketConnections.values()) {
+//						webSocketConnection2.send(frame);
+//					}
 //				}
 			}
 		}
@@ -65,7 +67,7 @@ public class WebSocketServerTest {
 	 */
 	static public void main(String args[]){
 		try {
-			webSocketServer.config(1000, 10);
+			webSocketServer.config(10000, 10);
 			webSocketServer.start(8090, webSocketHandler);
 			System.out.println("server started");
 		} catch (Exception e) {

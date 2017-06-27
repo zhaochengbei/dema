@@ -83,7 +83,7 @@ public class WebSocketClients {
 			
 		}
 		public void onReadIdle(TcpConnection connection) {
-			WebSocketConnection webSocketConnection = webSocketConnections.remove(connection);
+			WebSocketConnection webSocketConnection = webSocketConnections.get(connection);
 			webSocketConnection.close();	
 		}
 		
