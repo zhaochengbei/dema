@@ -81,6 +81,9 @@ public class TcpServer {
 				long time = System.currentTimeMillis();
 				ArrayList<TcpConnection> connections = getConnections();
 				synchronized (connections) {
+					/**
+					 * 如果连接列表中存在某个connection，说明他还没有关闭，在这里加超时事件一定会该连接的关闭时间之前；
+					 */
 					for (int i = 0; i < getConnections().size(); i++) {
 						TcpConnection connection = connections.get(i);
 						if(readIdleTimeoutSeconds !=0 &&connection.isClose() == false&&time - connection.lastReadTime> readIdleTimeoutSeconds*1000){

@@ -60,13 +60,15 @@ public class WebSocketConnection {
 	/**
 	 * 
 	 */
+	public void sendCloseFrame(){
+		WebSocketFrame closePacket = new WebSocketFrame();
+		closePacket.opcode = WebSocketOpcode.CLOSE;
+		send(closePacket);
+	}
+	/**
+	 * 
+	 */
 	public void close(){
-		//if tcp connection is not close
-		if(tcpConnection.isClose() == false){
-			WebSocketFrame closePacket = new WebSocketFrame();
-			closePacket.opcode = WebSocketOpcode.CLOSE;
-			send(closePacket);
-		}
 		tcpConnection.close(TcpConnectionCloseReason.NormalActiveClose);
 	}
 	

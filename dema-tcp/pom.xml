@@ -5,7 +5,7 @@
   
   <groupId>io.github.zhaochengbei</groupId>
   <artifactId>dema-tcp</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
   <name>dema-tcp</name>
   <description>dema-tcp is a nio tcp library</description>  
   <dependencies>

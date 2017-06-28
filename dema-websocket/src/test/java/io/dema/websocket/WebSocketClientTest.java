@@ -44,6 +44,7 @@ public class WebSocketClientTest {
 		}
 
 		public void onReadIdle(WebSocketConnection webSocketConnection) {
+			webSocketConnection.sendCloseFrame();
 			webSocketConnection.close();
 		}
 		public void onClose(WebSocketConnection webSocketConnection) {

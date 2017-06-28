@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.zhaochengbei</groupId>
   <artifactId>dema-websocket</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
   <name>dema-websocket</name>
   <description>dema-websocket is a websocket library base on dema-http and dema-tcp.</description>
   
@@ -12,12 +12,12 @@
 	<dependency>
 		<artifactId>dema-http</artifactId>
 		<groupId>io.github.zhaochengbei</groupId>
-		<version>1.1</version>
+		<version>1.2</version>
 	</dependency>
 	<dependency>
 		<artifactId>dema-tcp</artifactId>
 		<groupId>io.github.zhaochengbei</groupId>
-		<version>1.1</version>
+		<version>1.2</version>
 	</dependency>
   </dependencies>
   

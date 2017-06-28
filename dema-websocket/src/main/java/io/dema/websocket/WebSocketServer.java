@@ -22,6 +22,14 @@ import io.dema.tcp.TcpServer;
  * date：2017/6/20
 */
 public class WebSocketServer {
+
+	/**
+	 * 线程安全说明：
+	 * 由于在分配任务的时候进行了额外处理，同个连接handler中的操作不会同时进行；
+	 * 所以这里的get操作是安全的；
+	 * put remove 和其他地方的遍历有冲突，所以在put remove 遍历的时候加了锁；
+	 */
+	
 	/**
 	 * 
 	 */
@@ -51,6 +59,7 @@ public class WebSocketServer {
 			}
 			webSocketHandler.onAccpet(webSocketConnection);
 		}
+		
 		public void onRead(TcpConnection connection) {
 			//if has not hand shake
 			WebSocketConnection webSocketConnection = webSocketConnections.get(connection);
@@ -165,10 +174,11 @@ public class WebSocketServer {
 	/**
 	 * 
 	 */
-	public void closeAllWebSocketConnection(){
+	public void sendCloseFrameAndcloseAllWebSocketConnection(){
 		synchronized (webSocketConnections) {
 			for (Iterator<WebSocketConnection> iterator = webSocketConnections.values().iterator(); iterator.hasNext();) {
 				WebSocketConnection webSocketConnection = (WebSocketConnection) iterator.next();
+				webSocketConnection.sendCloseFrame();
 				webSocketConnection.close();
 			}
 		}

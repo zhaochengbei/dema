@@ -1,6 +1,7 @@
 package io.dema.http;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.dema.http.HttpClients;
 import io.dema.http.HttpContext;
@@ -26,7 +27,7 @@ public class HttpClientsTest {
 	/**
 	 * 
 	 */
-	static private int count=0;
+	static private  AtomicInteger count = new AtomicInteger();
 	/**
 	 * 
 	 */
@@ -39,7 +40,8 @@ public class HttpClientsTest {
 			request.version = HttpVersion.version1_1;
 			request.host = "localhost";
 			context.write(request);
-			System.out.println("totalReqeustCount :"+(++count)+",inRequestingConnection="+httpClients.getConnections().size());
+			count.getAndAdd(1);
+			System.out.println("totalReqeustCount :"+(count)+",inRequestingConnection="+httpClients.getConnections().size());
 			
 		}
 		
@@ -62,7 +64,7 @@ public class HttpClientsTest {
 	static public void main(String[] args){
 		try {
 			httpClients.start("localhost", 8080, 100000, 1, httpClientHandler);
-			Thread.sleep(3000);
+			Thread.sleep(100000);
 			httpClients.shutdown();
 		} catch (Exception e) {
 			e.printStackTrace();
