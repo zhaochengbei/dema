@@ -154,6 +154,10 @@ dema-websocket simple:<br/>
 	
 
 dema-tcp-socketpool simple:<br/>
+	
+	/**
+	 * 
+	 */
 	static private DemaSocketPool demaSocketPool = new DemaSocketPool();
 	static private ExecutorService executorService = Executors.newFixedThreadPool(1,new ThreadFactory() {
 		public int threadIndex = 0;
