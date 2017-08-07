@@ -151,3 +151,27 @@ dema-websocket simple:<br/>
 			e.printStackTrace();
 		}
 	}
+	
+
+dema-tcp-socketpool is a client use socket pool library.
+simple:
+	static private DemaSocketPool demaSocketPool = new DemaSocketPool();
+	static private ExecutorService executorService = Executors.newFixedThreadPool(1,new ThreadFactory() {
+		public int threadIndex = 0;
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "callServerTask"+threadIndex);
+		}
+	} );
+	/**
+	 * 
+	 */
+	static public void main(String[] args){
+		demaSocketPool.init("localhost", 9090, 1, 3000);
+		//use socketpool and threadpool call server
+		for (int i = 0; i < 100; i++) {
+			CallServerTask callServerTask = new CallServerTask();
+			callServerTask.demaSocketPool = demaSocketPool;
+			executorService.execute(callServerTask);
+		}
+		executorService.shutdown();
+	}
