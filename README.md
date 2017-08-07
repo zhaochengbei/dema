@@ -1,7 +1,7 @@
 general:<br/>
-dema is a set of java nio network library，strong(and no leak)，high-performance and easy to use. it incloud dema-tcp and dema-http and dema-websocket three library.
+dema is a set of java network library，strong(and no leak)，high-performance and easy to use. it incloud dema-tcp and dema-http and dema-websocket three nio network server used librarys and a io network client use socketpool library.
 
-compare with netty:<br/>
+nio librarys compare with netty:<br/>
 when identical connection and packet send/receive,only pay 1/4 memory and 50% cpu,and not delay not leak.
 
 dema-tcp simple:<br/>
@@ -153,8 +153,7 @@ dema-websocket simple:<br/>
 	}
 	
 
-dema-tcp-socketpool is a client use socket pool library.
-simple:
+dema-tcp-socketpool simple:<br/>
 	static private DemaSocketPool demaSocketPool = new DemaSocketPool();
 	static private ExecutorService executorService = Executors.newFixedThreadPool(1,new ThreadFactory() {
 		public int threadIndex = 0;
