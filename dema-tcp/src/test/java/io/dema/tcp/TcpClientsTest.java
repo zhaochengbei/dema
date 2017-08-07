@@ -77,7 +77,7 @@ public class TcpClientsTest {
     }
     static public void testClients()throws Exception{
     	tcpClients = new TcpClients();
-		tcpClients.start("localhost", 9090, 5000, 1*TimeUnit.MILLISECONDS.ordinal(), ioHandler);
+		tcpClients.start("localhost", 9090, 1, 1*TimeUnit.MILLISECONDS.ordinal(), ioHandler);
 		/** 
 		 * 给线程分配任务，让线程发送消息给服务器；
 		 */

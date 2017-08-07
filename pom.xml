@@ -26,5 +26,7 @@
     <module>dema-tcp</module>
     <module>dema-http</module>
     <module>dema-websocket</module>
+    <module>dema-tcp-connpool</module>
+    <module>dema-tcp-socketpool</module>
   </modules>
 </project>

@@ -28,7 +28,7 @@ public class ConnectionUtils {
 	
 		if(packet.packetLength == -1){
 			if(packet.byteBuffer == null){
-				packet.byteBuffer = ByteBuffer.allocate(lengthFieldOffset+lengthOfLength);
+				packet.byteBuffer = ByteBuffer.allocate(lengthOfLength);
 			} 
 			connection.read(packet.byteBuffer);
 			if(packet.byteBuffer.remaining() != 0){
