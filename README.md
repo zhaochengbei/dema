@@ -1,7 +1,7 @@
 general:<br/>
-dema is a set of java nio network library，strong(and no leak)，high-performance and easy to use. it incloud dema-tcp and dema-http and dema-websocket three library.
+dema is a set of java network library，strong，high-performance and easy to use. it incloud dema-tcp and dema-http and dema-websocket three nio network server used librarys and a io network client use socketpool library.
 
-compare with netty:<br/>
+nio librarys compare with netty:<br/>
 when identical connection and packet send/receive,only pay 1/4 memory and 50% cpu,and not delay not leak.
 
 dema-tcp simple:<br/>
@@ -150,4 +150,72 @@ dema-websocket simple:<br/>
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+
+dema-tcp-socketpool simple:<br/>
+	
+	/**
+	 * 
+	 */
+	static private DemaSocketPool demaSocketPool = new DemaSocketPool();
+	static private ExecutorService executorService = Executors.newFixedThreadPool(1,new ThreadFactory() {
+		public int threadIndex = 0;
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "callServerTask"+threadIndex);
+		}
+	} );
+	/**
+	 * 
+	 */
+	static public void main(String[] args){
+		demaSocketPool.init("localhost", 9090, 1, 3000);
+		//use socketpool and threadpool call server
+		for (int i = 0; i < 100; i++) {
+			CallServerTask callServerTask = new CallServerTask();
+			callServerTask.demaSocketPool = demaSocketPool;
+			executorService.execute(callServerTask);
+		}
+		executorService.shutdown();
+	}
+
+CallServerTask:<br/>
+
+	/**
+	 * 
+	 */
+	static public int index =0;
+	/**
+	 * 
+	 */
+	public DemaSocketPool demaSocketPool;
+	/**
+	 * 
+	 */
+	public void run() {
+		DemaSocket demaSocket = null;
+		try {
+			long time = System.currentTimeMillis();
+	    	ByteBuffer buffer = ByteBuffer.allocate(5);
+			buffer.putInt(1);
+			buffer.put(Byte.valueOf("1"));
+			demaSocket = demaSocketPool.getNotInUseSocket();
+			if((new Random()).nextInt(2)>1){
+				demaSocket.close(DemaSocketCloseReason.WriteError);
+			}
+			
+			buffer.flip();
+			demaSocket.writeAndFlush(buffer);
+			ByteBuffer buffer2 = ByteBuffer.allocate(5);
+			demaSocket.read(buffer2);
+			index++;
+			System.out.println("call complete,cost time="+(System.currentTimeMillis()-time)+"index="+index);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			if(demaSocket != null){
+				demaSocketPool.laybackSocket(demaSocket);
+			}
+		}
+		
 	}
