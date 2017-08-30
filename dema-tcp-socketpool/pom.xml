@@ -4,9 +4,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.zhaochengbei</groupId>
   <artifactId>dema-tcp-socketpool</artifactId>
-  <version>1.2</version>
+  <version>1.0</version>
   <name>dema-tcp-socketpool</name>
-  <description>dema-tcp-socketpool is a socket pool library base on dema-tcp.</description>
+  <description>dema-tcp-socketpool is a socket pool library.</description>
   
   <dependencies>
   </dependencies>

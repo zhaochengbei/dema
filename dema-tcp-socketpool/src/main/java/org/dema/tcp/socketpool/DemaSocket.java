@@ -57,7 +57,7 @@ public class DemaSocket {
 		this.timeout = timeout;
 		long time = System.currentTimeMillis();
 		socket.connect(new InetSocketAddress(host, port),timeout);
-		System.out.println("connect cost time="+(System.currentTimeMillis()-time));
+//		System.out.println("connect cost time="+(System.currentTimeMillis()-time));
 	}
 
 	/**

@@ -9,6 +9,9 @@ import java.util.concurrent.ThreadFactory;
  * date：2017/8/4
 */
 public class SockerPoolTest {
+	/**
+	 * 
+	 */
 	static private DemaSocketPool demaSocketPool = new DemaSocketPool();
 	static private ExecutorService executorService = Executors.newFixedThreadPool(1,new ThreadFactory() {
 		public int threadIndex = 0;
@@ -20,9 +23,9 @@ public class SockerPoolTest {
 	 * 
 	 */
 	static public void main(String[] args){
-		demaSocketPool.init("localhost", 9090, 1, 3000);
-		//使用线程池连接池发送接受5000个数据
-		for (int i = 0; i < 100; i++) {
+		demaSocketPool.init("localhost", 9090, 20, 3000);
+		//use socketpool and threadpool call server
+		for (int i = 0; i < 5000; i++) {
 			CallServerTask callServerTask = new CallServerTask();
 			callServerTask.demaSocketPool = demaSocketPool;
 			executorService.execute(callServerTask);

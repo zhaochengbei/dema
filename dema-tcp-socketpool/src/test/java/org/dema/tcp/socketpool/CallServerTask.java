@@ -8,6 +8,9 @@ import java.util.Random;
  * date：2017年8月4日
 */
 public class CallServerTask implements Runnable {
+	/**
+	 * 
+	 */
 	static public int index =0;
 	/**
 	 * 
@@ -17,7 +20,6 @@ public class CallServerTask implements Runnable {
 	 * 
 	 */
 	public void run() {
-		// TODO Auto-generated method stub
 		DemaSocket demaSocket = null;
 		try {
 			long time = System.currentTimeMillis();
@@ -25,9 +27,9 @@ public class CallServerTask implements Runnable {
 			buffer.putInt(1);
 			buffer.put(Byte.valueOf("1"));
 			demaSocket = demaSocketPool.getNotInUseSocket();
-			if((new Random()).nextInt(2)>1){
-				demaSocket.close(DemaSocketCloseReason.WriteError);
-			}
+//			if((new Random()).nextInt(2)>1){
+//				demaSocket.close(DemaSocketCloseReason.WriteError);
+//			}
 			
 			buffer.flip();
 			demaSocket.writeAndFlush(buffer);
